@@ -9,21 +9,24 @@ Requirement:
     aiohttp==3.7.4.post0
 """
 
+import sys
 import asyncio
 from holodex.client import HolodexClient
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 
 liver_list = (
-    ## vspo
+    # vspo
     "小雀とと", "花芽すみれ", "花芽なずな", "一ノ瀬うるは",
     "橘ひなの", "胡桃のあ", "如月れん", "英リサ",
     "兎咲ミミ", "空澄セナ", "八雲べに", "神成きゅぴ",
     "藍沢エマ", "紫宮るな",
-    ## 藝人旅團 (VTuber)
+    # 芸人旅団 (VTuber)
     "かみと", "白雪レイド", "小森めと", "バーチャルゴリラ")
 
 result = defaultdict(dict)
+today_date = datetime.combine(date.today(), datetime.min.time())
+tomorrow_date = today_date + timedelta(days=1)
 
 def utc_to_loacl(utc_dt):
     tw = timezone(timedelta(hours=+8))
@@ -32,55 +35,76 @@ def utc_to_loacl(utc_dt):
 
 async def main():
     async with HolodexClient() as client:
-        # search = await client.autocomplete("雨森小夜")
         for liver in liver_list:
             search = await client.autocomplete(liver)
 
             channel_id = search.contents[0].value
             channel = await client.channel(channel_id)
+            name = channel.name
             # print(f'{channel.subscriber_count}')
-            # videos = await client.videos_from_channel(channel_id, "videos")
-            # print(f'{videos.contents[0].title}')
+
+            # NOTE: Live/Upcoming Videos
             today_schedule = {
                 "channel_id": channel_id,
+                # HACK: Max upcoming hours: 18
                 "max_upcoming_hours": 18
             }
-
             live = await client.get_live_streams(today_schedule)
-            idx = 0
-            
             for stream in live:
-                # print(stream)
-                # if 'start_actual' in stream:
-                #     print(f"{stream['start_actual']}")
-                # else:
-                #     print(f"{stream['start_scheduled']}")
-                # publish = utc_to_loacl(stream['published_at'])
-                # avaiable = utc_to_loacl(stream['available_at'])
                 start_scheduled = utc_to_loacl(stream['start_scheduled'])
-                name = channel.name
                 title = stream['title']
                 url = f"https://youtu.be/{stream['id']}"
 
                 # Create dictionary
-                result[start_scheduled][idx] = {}
-                result[start_scheduled][idx]['name'] = ""
-                result[start_scheduled][idx]['title'] = ""
-                result[start_scheduled][idx]['url'] = ""
-                if result[start_scheduled][idx]['name'] != "":
-                    idx += 1
-                result[start_scheduled][idx]['name'] = name
-                result[start_scheduled][idx]['title'] = title
-                result[start_scheduled][idx]['url'] = url
+                if not result[start_scheduled]:
+                    result[start_scheduled] = []
+                video_info = {
+                    'name': name,
+                    'title': title,
+                    'url': url
+                }
+                result[start_scheduled].append(video_info)
+
+            # NOTE: Archive Videos (アーカイブ)
+            # HACK: Limit archive videos: 3
+            videos = await client.videos_from_channel(channel_id, "videos", limit=3)
+            for idx in range(len(videos.contents)):
+                start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
+                # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
+                if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
+                    # print(f'[PASS] {astart_scheduled} > {today_date}')
+                    title = videos.contents[idx].title
+                    url = f"https://youtu.be/{videos.contents[idx].id}"
+
+                    # TODO: check the same url with live/upcoming videos
+                    if url in [v['url'] for t in result for v in result[t]]:
+                        print(f'skip live/upcoming videos: {url}')
+                        continue
+
+                    # Create dictionary
+                    if not result[start_scheduled]:
+                        result[start_scheduled] = []
+                    video_info = {
+                        'name': name,
+                        'title': title,
+                        'url': url
+                    }
+                    result[start_scheduled].append(video_info)
 
 # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 asyncio.run(main())
 
-for start_scheduled in sorted(result):
-    for idx in result[start_scheduled]:
-        print(start_scheduled.strftime('%H:%M (%m/%d)'))
-        print(result[start_scheduled][idx]['name'])
-        print(result[start_scheduled][idx]['title'])
-        print(result[start_scheduled][idx]['url'])
-        print('')
+if __name__ == "__main__":
+    print(f"Today's Schedule {today_date}\n")
+    prev_time = ""
+    for start_scheduled in sorted(result):
+        for video in result[start_scheduled]:
+            # print(start_scheduled.strftime('%H:%M (%m/%d)'))
+            
+            if prev_time != start_scheduled.strftime('%H:%M'):
+                print(start_scheduled.strftime('%H:%M'))
+                prev_time = start_scheduled.strftime('%H:%M')
+            print(video['name'])
+            print(video['title'])
+            print(video['url'],'\n')
