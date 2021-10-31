@@ -23,9 +23,6 @@ liver_list = (
     ## 藝人旅團 (VTuber)
     "かみと", "白雪レイド", "小森めと", "バーチャルゴリラ")
 
-# def tree():
-#     return defaultdict(tree)
-
 result = defaultdict(dict)
 
 def utc_to_loacl(utc_dt):
@@ -65,7 +62,7 @@ async def main():
                 title = stream['title']
                 url = f"https://youtu.be/{stream['id']}"
 
-                # Create result dictionary
+                # Create dictionary
                 result[start_scheduled][idx] = {}
                 result[start_scheduled][idx]['name'] = ""
                 result[start_scheduled][idx]['title'] = ""
