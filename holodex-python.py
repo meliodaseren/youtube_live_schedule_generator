@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Holodex API Documentation
@@ -9,7 +10,6 @@ Requirement:
     aiohttp==3.7.4.post0
 """
 
-import sys
 import asyncio
 from holodex.client import HolodexClient
 from collections import defaultdict
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     for start_scheduled in sorted(result):
         for video in result[start_scheduled]:
             # print(start_scheduled.strftime('%H:%M (%m/%d)'))
-            
+
             if prev_time != start_scheduled.strftime('%H:%M'):
                 print(start_scheduled.strftime('%H:%M'))
                 prev_time = start_scheduled.strftime('%H:%M')
