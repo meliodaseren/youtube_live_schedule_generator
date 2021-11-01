@@ -11,6 +11,7 @@ Requirement:
 """
 
 import asyncio
+from sys import platform
 from holodex.client import HolodexClient
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta, date
@@ -92,7 +93,12 @@ async def main():
                     result[start_scheduled].append(video_info)
 
 # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+if platform == "linux" or platform == "linux2":
+    pass
+elif platform == "darwin":
+    pass
+elif platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 asyncio.run(main())
 
 if __name__ == "__main__":
