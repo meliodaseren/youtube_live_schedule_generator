@@ -132,8 +132,6 @@ elif platform == "win32": # Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 asyncio.run(main())
 
-print(result)
-
 if __name__ == "__main__":
     print(f"Today's Schedule {today_date}\n")
     prev_time = ""
@@ -144,7 +142,7 @@ if __name__ == "__main__":
                 print(start_scheduled.strftime('%H:%M'))
                 prev_time = start_scheduled.strftime('%H:%M')
             if video['status'] == 'Collabs':
-                print(f"{video['collabs_channel_id']} {video['name']} (コラボ 合作)")
+                print(f"{video['collabs_channel_id']} ({video['name']} 合作)")
             else:
                 print(f"{video['name']}")
             print(f"{video['title']}")
