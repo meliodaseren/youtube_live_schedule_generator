@@ -44,7 +44,7 @@ async def main():
             name = channel.name
             # print(f'{channel.subscriber_count}')
 
-            # NOTE: Live/Upcoming Videos
+            # NOTE: Live/Upcoming Videos (ライブ配信)
             today_schedule = {
                 "channel_id": channel_id,
                 # HACK: Max upcoming hours: 18
@@ -62,7 +62,8 @@ async def main():
                 video_info = {
                     'name': name,
                     'title': title,
-                    'url': url
+                    'url': url,
+                    'status': 'Live/Upcoming'
                 }
                 result[start_scheduled].append(video_info)
 
@@ -88,7 +89,35 @@ async def main():
                     video_info = {
                         'name': name,
                         'title': title,
-                        'url': url
+                        'url': url,
+                        'status': 'Archive'
+                    }
+                    result[start_scheduled].append(video_info)
+
+            # NOTE: Collabs Videos (コラボ)
+            # HACK: Limit archive videos: 3
+            videos = await client.videos_from_channel(channel_id, "collabs", limit=3)
+            for idx in range(len(videos.contents)):
+                start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
+                # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
+                if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
+                    # print(f'[PASS] {astart_scheduled} > {today_date}')
+                    title = videos.contents[idx].title
+                    url = f"https://youtu.be/{videos.contents[idx].id}"
+
+                    # TODO: check the same url with live/upcoming videos
+                    if url in [v['url'] for t in result for v in result[t]]:
+                        print(f'skip live/upcoming videos: {url}')
+                        continue
+
+                    # Create dictionary
+                    if not result[start_scheduled]:
+                        result[start_scheduled] = []
+                    video_info = {
+                        'name': name,
+                        'title': title,
+                        'url': url,
+                        'status': 'Collabs'
                     }
                     result[start_scheduled].append(video_info)
 
@@ -107,10 +136,12 @@ if __name__ == "__main__":
     for start_scheduled in sorted(result):
         for video in result[start_scheduled]:
             # print(start_scheduled.strftime('%H:%M (%m/%d)'))
-
             if prev_time != start_scheduled.strftime('%H:%M'):
                 print(start_scheduled.strftime('%H:%M'))
                 prev_time = start_scheduled.strftime('%H:%M')
-            print(video['name'])
-            print(video['title'])
-            print(video['url'],'\n')
+            if video['status'] == 'Collabs':
+                print(f"{video['name']} (コラボ 合作)")
+            else:
+                print(f"{video['name']}")
+            print(f"{video['title']}")
+            print(f"{video['url']}\n")
