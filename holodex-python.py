@@ -80,7 +80,7 @@ async def main():
 
                     # TODO: check the same url with live/upcoming videos
                     if url in [v['url'] for t in result for v in result[t]]:
-                        print(f'skip live/upcoming videos: {url}')
+                        print(f'skip videos: {liver} {url}')
                         continue
 
                     # Create dictionary
@@ -103,11 +103,12 @@ async def main():
                 if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
                     # print(f'[PASS] {astart_scheduled} > {today_date}')
                     title = videos.contents[idx].title
+                    collabs_channel = videos.contents[idx].channel.name
                     url = f"https://youtu.be/{videos.contents[idx].id}"
 
                     # TODO: check the same url with live/upcoming videos
                     if url in [v['url'] for t in result for v in result[t]]:
-                        print(f'skip live/upcoming videos: {url}')
+                        print(f'skip videos: {liver} {url}')
                         continue
 
                     # Create dictionary
@@ -115,6 +116,7 @@ async def main():
                         result[start_scheduled] = []
                     video_info = {
                         'name': name,
+                        'collabs_channel_id': collabs_channel,
                         'title': title,
                         'url': url,
                         'status': 'Collabs'
@@ -124,11 +126,13 @@ async def main():
 # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
 if platform == "linux" or platform == "linux2":
     pass
-elif platform == "darwin":
+elif platform == "darwin": # macOS
     pass
-elif platform == "win32":
+elif platform == "win32": # Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 asyncio.run(main())
+
+print(result)
 
 if __name__ == "__main__":
     print(f"Today's Schedule {today_date}\n")
@@ -140,7 +144,7 @@ if __name__ == "__main__":
                 print(start_scheduled.strftime('%H:%M'))
                 prev_time = start_scheduled.strftime('%H:%M')
             if video['status'] == 'Collabs':
-                print(f"{video['name']} (コラボ 合作)")
+                print(f"{video['collabs_channel_id']} {video['name']} (コラボ 合作)")
             else:
                 print(f"{video['name']}")
             print(f"{video['title']}")
