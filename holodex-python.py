@@ -16,14 +16,8 @@ from holodex.client import HolodexClient
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta, date
 
-liver_list = (
-    # vspo
-    "小雀とと", "花芽すみれ", "花芽なずな", "一ノ瀬うるは",
-    "橘ひなの", "胡桃のあ", "如月れん", "英リサ",
-    "兎咲ミミ", "空澄セナ", "八雲べに", "神成きゅぴ",
-    "藍沢エマ", "紫宮るな",
-    # 芸人旅団 (VTuber)
-    "かみと", "白雪レイド", "小森めと", "バーチャルゴリラ")
+with open('liver.list', 'r', encoding='utf-8') as f:
+    liver_list = [line.strip() for line in f.read().splitlines()]
 
 result = defaultdict(dict)
 today_date = datetime.combine(date.today(), datetime.min.time())
