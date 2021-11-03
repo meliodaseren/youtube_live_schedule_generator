@@ -6,27 +6,39 @@ Holodex API Documentation
     https://holodex.stoplight.io/
 Python wrapper
     https://github.com/ombe1229/holodex
-Requirement:
-    aiohttp==3.7.4.post0
 """
 
 import asyncio
-from sys import platform
 from holodex.client import HolodexClient
+from rich.console import Console
+from sys import platform
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta, date
 
-with open('liver.list', 'r', encoding='utf-8') as f:
-    liver_list = [line.strip() for line in f.read().splitlines()]
-
+console = Console()
 result = defaultdict(dict)
 today_date = datetime.combine(date.today(), datetime.min.time())
 tomorrow_date = today_date + timedelta(days=1)
+
+with open('liver.list', 'r', encoding='utf-8') as f:
+    liver_list = [line.strip() for line in f.read().splitlines()]
 
 def utc_to_loacl(utc_dt):
     tw = timezone(timedelta(hours=+8))
     schedule_time = datetime.strptime(utc_dt, "%Y-%m-%dT%H:%M:%S.%fZ")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
+
+def check_channel_in_list(channel_name: str, liver_list: list):
+    for liver in liver_list:
+        if liver in channel_name:
+            # console.print(f"[bold yellow][WARN][/bold yellow] \"{channel_name}\" in liver list")
+            return True
+
+def check_url_exist(name: str, url: str, video_dict: dict):
+    # TODO: check the same url with live/upcoming videos
+    if url in [v['url'] for t in video_dict for v in video_dict[t]]:
+        console.print(f"[bold yellow][WARN][/bold yellow] skip videos: {url} ({name})")
+        return True
 
 async def main():
     async with HolodexClient() as client:
@@ -50,6 +62,9 @@ async def main():
                 title = stream['title']
                 url = f"https://youtu.be/{stream['id']}"
 
+                if check_url_exist(liver, url, result):
+                    continue
+
                 # Create dictionary
                 if not result[start_scheduled]:
                     result[start_scheduled] = []
@@ -72,9 +87,7 @@ async def main():
                     title = videos.contents[idx].title
                     url = f"https://youtu.be/{videos.contents[idx].id}"
 
-                    # TODO: check the same url with live/upcoming videos
-                    if url in [v['url'] for t in result for v in result[t]]:
-                        print(f'skip videos: {liver} {url}')
+                    if check_url_exist(liver, url, result):
                         continue
 
                     # Create dictionary
@@ -100,9 +113,7 @@ async def main():
                     collabs_channel = videos.contents[idx].channel.name
                     url = f"https://youtu.be/{videos.contents[idx].id}"
 
-                    # TODO: check the same url with live/upcoming videos
-                    if url in [v['url'] for t in result for v in result[t]]:
-                        print(f'skip videos: {liver} {url}')
+                    if check_url_exist(liver, url, result):
                         continue
 
                     # Create dictionary
@@ -110,7 +121,7 @@ async def main():
                         result[start_scheduled] = []
                     video_info = {
                         'name': name,
-                        'collabs_channel_id': collabs_channel,
+                        'collabs_channel': collabs_channel,
                         'title': title,
                         'url': url,
                         'status': 'Collabs'
@@ -136,7 +147,10 @@ if __name__ == "__main__":
                 print(start_scheduled.strftime('%H:%M'))
                 prev_time = start_scheduled.strftime('%H:%M')
             if video['status'] == 'Collabs':
-                print(f"{video['collabs_channel_id']} ({video['name']} 合作)")
+                if check_channel_in_list(video['collabs_channel'], liver_list):
+                    print(f"{video['collabs_channel']}")
+                else:
+                    print(f"{video['collabs_channel']} ({video['name']} 合作)")
             else:
                 print(f"{video['name']}")
             print(f"{video['title']}")
