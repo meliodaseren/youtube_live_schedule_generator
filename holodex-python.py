@@ -23,6 +23,14 @@ tomorrow_date = today_date + timedelta(days=1)
 with open('liver.list', 'r', encoding='utf-8') as f:
     liver_list = [line.strip() for line in f.read().splitlines()]
 
+# Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
+if platform == "linux" or platform == "linux2":
+    pass
+elif platform == "darwin": # macOS
+    pass
+elif platform == "win32": # Windows
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 def utc_to_loacl(utc_dt):
     tw = timezone(timedelta(hours=+8))
     schedule_time = datetime.strptime(utc_dt, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -77,8 +85,8 @@ async def main():
                 result[start_scheduled].append(video_info)
 
             # NOTE: Archive Videos (アーカイブ)
-            # HACK: Limit archive videos: 3
-            videos = await client.videos_from_channel(channel_id, "videos", limit=3)
+            # HACK: Limit archive videos: 5
+            videos = await client.videos_from_channel(channel_id, "videos", limit=5)
             for idx in range(len(videos.contents)):
                 start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
                 # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
@@ -102,8 +110,8 @@ async def main():
                     result[start_scheduled].append(video_info)
 
             # NOTE: Collabs Videos (コラボ)
-            # HACK: Limit archive videos: 3
-            videos = await client.videos_from_channel(channel_id, "collabs", limit=3)
+            # HACK: Limit archive videos: 5
+            videos = await client.videos_from_channel(channel_id, "collabs", limit=5)
             for idx in range(len(videos.contents)):
                 start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
                 # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
@@ -128,16 +136,10 @@ async def main():
                     }
                     result[start_scheduled].append(video_info)
 
-# Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
-if platform == "linux" or platform == "linux2":
-    pass
-elif platform == "darwin": # macOS
-    pass
-elif platform == "win32": # Windows
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-asyncio.run(main())
-
 if __name__ == "__main__":
+
+    asyncio.run(main())
+
     print(f"Today's Schedule {today_date}\n")
     prev_time = ""
     for start_scheduled in sorted(result):
