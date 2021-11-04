@@ -17,7 +17,7 @@ from datetime import datetime, timezone, timedelta, date
 
 console = Console()
 result = defaultdict(dict)
-specify_date = datetime(2021, 11, 3, 0, 0)
+# specify_date = datetime(2021, 11, 3, 0, 0)
 if specify_date:
     today_date = specify_date
 else:
