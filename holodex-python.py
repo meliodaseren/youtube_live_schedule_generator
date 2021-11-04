@@ -17,7 +17,11 @@ from datetime import datetime, timezone, timedelta, date
 
 console = Console()
 result = defaultdict(dict)
-today_date = datetime.combine(date.today(), datetime.min.time())
+specify_date = datetime(2021, 11, 3, 0, 0)
+if specify_date:
+    today_date = specify_date
+else:
+    today_date = datetime.combine(date.today(), datetime.min.time())
 tomorrow_date = today_date + timedelta(days=1)
 
 with open('liver.list', 'r', encoding='utf-8') as f:
@@ -137,17 +141,23 @@ async def main():
                     result[start_scheduled].append(video_info)
 
 if __name__ == "__main__":
+    print(f"Today's Schedule {today_date}\n")
 
     asyncio.run(main())
 
-    print(f"Today's Schedule {today_date}\n")
+    prev_date = ""
     prev_time = ""
     for start_scheduled in sorted(result):
+        # NOTE: print date
+        if prev_date != start_scheduled.strftime('%m/%d'):
+            print(start_scheduled.strftime('--- %m/%d ---'))
+            prev_date = start_scheduled.strftime('%m/%d')
         for video in result[start_scheduled]:
-            # print(start_scheduled.strftime('%H:%M (%m/%d)'))
-            if prev_time != start_scheduled.strftime('%H:%M'):
+            # NOTE: print time
+            if prev_time != start_scheduled.strftime('%H:%M (%m/%d)'):
                 print(start_scheduled.strftime('%H:%M'))
-                prev_time = start_scheduled.strftime('%H:%M')
+                prev_time = start_scheduled.strftime('%H:%M (%m/%d)')
+            # NOTE: print channel name
             if video['status'] == 'Collabs':
                 if check_channel_in_list(video['collabs_channel'], liver_list):
                     print(f"{video['collabs_channel']}")
@@ -155,5 +165,7 @@ if __name__ == "__main__":
                     print(f"{video['collabs_channel']} ({video['name']} 合作)")
             else:
                 print(f"{video['name']}")
+            # NOTE: print video title
             print(f"{video['title']}")
+            # NOTE: print video url
             print(f"{video['url']}\n")
