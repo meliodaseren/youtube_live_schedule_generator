@@ -17,6 +17,8 @@ from datetime import datetime, timezone, timedelta, date
 
 console = Console()
 result = defaultdict(dict)
+
+specify_date = ""
 # specify_date = datetime(2021, 11, 3, 0, 0)
 if specify_date:
     today_date = specify_date
@@ -149,14 +151,14 @@ if __name__ == "__main__":
     prev_time = ""
     for start_scheduled in sorted(result):
         # NOTE: print date
-        if prev_date != start_scheduled.strftime('%m/%d'):
-            print(start_scheduled.strftime('--- %m/%d ---'))
-            prev_date = start_scheduled.strftime('%m/%d')
+        if prev_date != start_scheduled.strftime('%Y/%m/%d'):
+            print(start_scheduled.strftime('--- %Y/%m/%d ---'))
+            prev_date = start_scheduled.strftime('%Y/%m/%d')
         for video in result[start_scheduled]:
             # NOTE: print time
-            if prev_time != start_scheduled.strftime('%H:%M (%m/%d)'):
+            if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
                 print(start_scheduled.strftime('%H:%M'))
-                prev_time = start_scheduled.strftime('%H:%M (%m/%d)')
+                prev_time = start_scheduled.strftime('%H:%M (%Y/%m/%d)')
             # NOTE: print channel name
             if video['status'] == 'Collabs':
                 if check_channel_in_list(video['collabs_channel'], liver_list):
