@@ -22,11 +22,14 @@ specify_date = ""
 # specify_date = datetime(2021, 11, 3, 0, 0)
 if specify_date:
     today_date = specify_date
+    last_week = today_date - datetime.timedelta(days=7)
 else:
     today_date = datetime.combine(date.today(), datetime.min.time())
+    first_date = today_date - timedelta(days=7)
+    # first_date = today_date - timedelta(days=30)
 tomorrow_date = today_date + timedelta(days=1)
 
-with open('liver.list', 'r', encoding='utf-8') as f:
+with open('liver.clips.list', 'r', encoding='utf-8') as f:
     liver_list = [line.strip() for line in f.read().splitlines()]
 
 # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
@@ -64,41 +67,16 @@ async def main():
             name = channel.name
             # print(f'{channel.subscriber_count}')
 
-            # NOTE: Live/Upcoming Videos (ライブ配信)
-            today_schedule = {
-                "channel_id": channel_id,
-                # HACK: Max upcoming hours: 18
-                "max_upcoming_hours": 18
-            }
-            live = await client.get_live_streams(today_schedule)
-            for stream in live:
-                start_scheduled = utc_to_loacl(stream['start_scheduled'])
-                title = stream['title']
-                url = f"https://youtu.be/{stream['id']}"
-
-                if check_url_exist(liver, url, result):
-                    continue
-
-                # Create dictionary
-                if not result[start_scheduled]:
-                    result[start_scheduled] = []
-                video_info = {
-                    'name': name,
-                    'title': title,
-                    'url': url,
-                    'status': 'Live/Upcoming'
-                }
-                result[start_scheduled].append(video_info)
-
-            # NOTE: Archive Videos (アーカイブ)
+            # NOTE: Clips Videos (切り抜き)
             # HACK: Limit archive videos: 5
-            videos = await client.videos_from_channel(channel_id, "videos", limit=5)
+            videos = await client.videos_from_channel(channel_id, "clips", limit=5)
             for idx in range(len(videos.contents)):
                 start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
-                # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
-                if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
-                    # print(f'[PASS] {astart_scheduled} > {today_date}')
+                # print(f'       {liver} {idx} {astart_scheduled} vs {first_date}')
+                if first_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
+                    # print(f'[PASS] {astart_scheduled} > {first_date}')
                     title = videos.contents[idx].title
+                    clips_channel = videos.contents[idx].channel.name
                     url = f"https://youtu.be/{videos.contents[idx].id}"
 
                     if check_url_exist(liver, url, result):
@@ -109,41 +87,15 @@ async def main():
                         result[start_scheduled] = []
                     video_info = {
                         'name': name,
+                        'clips_channel': clips_channel,
                         'title': title,
                         'url': url,
-                        'status': 'Archive'
-                    }
-                    result[start_scheduled].append(video_info)
-
-            # NOTE: Collabs Videos (コラボ)
-            # HACK: Limit archive videos: 5
-            videos = await client.videos_from_channel(channel_id, "collabs", limit=5)
-            for idx in range(len(videos.contents)):
-                start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
-                # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
-                if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
-                    # print(f'[PASS] {astart_scheduled} > {today_date}')
-                    title = videos.contents[idx].title
-                    collabs_channel = videos.contents[idx].channel.name
-                    url = f"https://youtu.be/{videos.contents[idx].id}"
-
-                    if check_url_exist(liver, url, result):
-                        continue
-
-                    # Create dictionary
-                    if not result[start_scheduled]:
-                        result[start_scheduled] = []
-                    video_info = {
-                        'name': name,
-                        'collabs_channel': collabs_channel,
-                        'title': title,
-                        'url': url,
-                        'status': 'Collabs'
+                        'status': 'Clips'
                     }
                     result[start_scheduled].append(video_info)
 
 if __name__ == "__main__":
-    print(f"Today's Schedule {today_date}\n")
+    print(f"Clips start from {first_date}\n")
 
     asyncio.run(main())
 
@@ -155,18 +107,17 @@ if __name__ == "__main__":
             print(start_scheduled.strftime('--- %Y/%m/%d ---'))
             prev_date = start_scheduled.strftime('%Y/%m/%d')
         for video in result[start_scheduled]:
-            # NOTE: print time
-            if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
-                print(start_scheduled.strftime('%H:%M'))
-                prev_time = start_scheduled.strftime('%H:%M (%Y/%m/%d)')
+            # if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
+                # print(start_scheduled.strftime('%H:%M'))
+                # prev_time = start_scheduled.strftime('%H:%M (%Y/%m/%d)')
             # NOTE: print channel name
-            if video['status'] == 'Collabs':
-                if check_channel_in_list(video['collabs_channel'], liver_list):
-                    print(f"{video['collabs_channel']}")
-                else:
-                    print(f"{video['collabs_channel']} ({video['name']} 合作)")
-            else:
-                print(f"{video['name']}")
+            # if video['status'] == 'Clips':
+                # if check_channel_in_list(video['clips_channel'], liver_list):
+                    # print(f"{video['clips_channel']}")
+                # else:
+                    # print(f"{video['clips_channel']} ({video['name']} 剪輯)")
+            # else:
+                # print(f"{video['name']}")
             # NOTE: print video title
             print(f"{video['title']}")
             # NOTE: print video url
