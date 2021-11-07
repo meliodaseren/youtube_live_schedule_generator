@@ -69,7 +69,7 @@ async def main():
 
             # NOTE: Clips Videos (切り抜き)
             # HACK: Limit archive videos: 5
-            videos = await client.videos_from_channel(channel_id, "clips", limit=5)
+            videos = await client.videos_from_channel(channel_id, "clips", limit=30)
             for idx in range(len(videos.contents)):
                 start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
                 # print(f'       {liver} {idx} {astart_scheduled} vs {first_date}')
