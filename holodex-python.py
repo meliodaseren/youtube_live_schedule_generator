@@ -8,6 +8,7 @@ Python wrapper
     https://github.com/ombe1229/holodex
 """
 
+import sys
 import asyncio
 from holodex.client import HolodexClient
 from rich.console import Console
@@ -17,9 +18,16 @@ from datetime import datetime, timezone, timedelta, date
 
 console = Console()
 result = defaultdict(dict)
-
-specify_date = ""
-# specify_date = datetime(2021, 11, 3, 0, 0)
+today_date, specify_date = "", ""
+try:
+    date_str = [i for i in str(sys.argv[1])]
+    y = int('20' + ''.join(date_str[0:2]))
+    m = int(''.join(date_str[2:4]))
+    d = int(''.join(date_str[4:6]))
+    specify_date = datetime(y, m, d, 0, 0)
+    # specify_date = datetime(2021, 11, 3, 0, 0)
+except IndexError:
+    pass
 if specify_date:
     today_date = specify_date
 else:
