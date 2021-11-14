@@ -172,6 +172,7 @@ if __name__ == "__main__":
                 if check_channel_in_list(video['collabs_channel'], liver_list):
                     print(f"{video['collabs_channel']}")
                 else:
+                    #TODO: only list the first one liver
                     print(f"{video['collabs_channel']} ({video['name']} 合作)")
             else:
                 print(f"{video['name']}")
