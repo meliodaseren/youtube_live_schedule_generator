@@ -19,6 +19,7 @@ from datetime import datetime, timezone, timedelta, date
 console = Console()
 result = defaultdict(dict)
 today_date, specify_date = "", ""
+
 try:
     date_str = [i for i in str(sys.argv[1])]
     y = int('20' + ''.join(date_str[0:2]))
@@ -28,6 +29,7 @@ try:
     # specify_date = datetime(2021, 11, 3, 0, 0)
 except IndexError:
     pass
+
 if specify_date:
     today_date = specify_date
 else:
@@ -73,30 +75,30 @@ async def main():
             # print(f'{channel.subscriber_count}')
 
             # NOTE: Live/Upcoming Videos (ライブ配信)
-            today_schedule = {
-                "channel_id": channel_id,
-                # HACK: Max upcoming hours: 18
-                "max_upcoming_hours": 18
-            }
-            live = await client.get_live_streams(today_schedule)
-            for stream in live:
-                start_scheduled = utc_to_loacl(stream['start_scheduled'])
-                title = stream['title']
-                url = f"https://youtu.be/{stream['id']}"
-
-                if check_url_exist(liver, url, result):
-                    continue
-
-                # Create dictionary
-                if not result[start_scheduled]:
-                    result[start_scheduled] = []
-                video_info = {
-                    'name': name,
-                    'title': title,
-                    'url': url,
-                    'status': 'Live/Upcoming'
-                }
-                result[start_scheduled].append(video_info)
+#            today_schedule = {
+#                "channel_id": channel_id,
+#                # HACK: Max upcoming hours: 18
+#                "max_upcoming_hours": 18
+#            }
+#            live = await client.get_live_streams(today_schedule)
+#            for stream in live:
+#                start_scheduled = utc_to_loacl(stream['start_scheduled'])
+#                title = stream['title']
+#                url = f"https://youtu.be/{stream['id']}"
+#
+#                if check_url_exist(liver, url, result):
+#                    continue
+#
+#                # Create dictionary
+#                if not result[start_scheduled]:
+#                    result[start_scheduled] = []
+#                video_info = {
+#                    'name': name,
+#                    'title': title,
+#                    'url': url,
+#                    'status': 'Live/Upcoming'
+#                }
+#                result[start_scheduled].append(video_info)
 
             # NOTE: Archive Videos (アーカイブ)
             # HACK: Limit archive videos: 5
@@ -157,26 +159,35 @@ if __name__ == "__main__":
 
     prev_date = ""
     prev_time = ""
-    for start_scheduled in sorted(result):
-        # NOTE: print date
-        if prev_date != start_scheduled.strftime('%Y/%m/%d'):
-            print(start_scheduled.strftime('--- %Y/%m/%d ---'))
-            prev_date = start_scheduled.strftime('%Y/%m/%d')
-        for video in result[start_scheduled]:
-            # NOTE: print time
-            if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
-                print(start_scheduled.strftime('%H:%M'))
-                prev_time = start_scheduled.strftime('%H:%M (%Y/%m/%d)')
-            # NOTE: print channel name
-            if video['status'] == 'Collabs':
-                if check_channel_in_list(video['collabs_channel'], liver_list):
-                    print(f"{video['collabs_channel']}")
+    with open('test.output', 'w') as f:
+        for start_scheduled in sorted(result):
+            # NOTE: print date
+            if prev_date != start_scheduled.strftime('%Y/%m/%d'):
+                print(start_scheduled.strftime('--- %Y/%m/%d ---'))
+                f.write(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}\n")
+                prev_date = start_scheduled.strftime('%Y/%m/%d')
+            for video in result[start_scheduled]:
+                # NOTE: print time
+                if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
+                    print(start_scheduled.strftime('%H:%M'))
+                    f.write(f"{start_scheduled.strftime('%H:%M')}\n")
+                    prev_time = start_scheduled.strftime('%H:%M (%Y/%m/%d)')
+                # NOTE: print channel name
+                if video['status'] == 'Collabs':
+                    if check_channel_in_list(video['collabs_channel'], liver_list):
+                        print(f"{video['collabs_channel']}")
+                        f.write(f"{video['collabs_channel']}\n")
+                    else:
+                        #TODO: only list the first one liver
+                        print(f"{video['collabs_channel']} ({video['name']} 合作)")
+                        f.write(f"{video['collabs_channel']} ({video['name']} 合作)\n")
                 else:
-                    #TODO: only list the first one liver
-                    print(f"{video['collabs_channel']} ({video['name']} 合作)")
-            else:
-                print(f"{video['name']}")
-            # NOTE: print video title
-            print(f"{video['title']}")
-            # NOTE: print video url
-            print(f"{video['url']}\n")
+                    print(f"{video['name']}")
+                    f.write(f"{video['name']}")
+                # NOTE: print video title
+                print(f"{video['title']}")
+                f.write(f"{video['title']}\n")
+                # NOTE: print video url
+                print(f"{video['url']}\n")
+                f.write(f"{video['url']}\n\n")
+
