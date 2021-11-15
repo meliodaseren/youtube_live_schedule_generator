@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
     prev_date = ""
     prev_time = ""
-    with open('test.output', 'w') as f:
+    with open('test.output', 'w', encoding='utf8') as f:
         for start_scheduled in sorted(result):
             # NOTE: print date
             if prev_date != start_scheduled.strftime('%Y/%m/%d'):
