@@ -161,18 +161,18 @@ if __name__ == "__main__":
     prev_time = ""
     with open('test.output', 'w', encoding='utf8') as f:
         for start_scheduled in sorted(result):
-            # NOTE: print date
+            # NOTE: date
             if prev_date != start_scheduled.strftime('%Y/%m/%d'):
                 print(start_scheduled.strftime('--- %Y/%m/%d ---'))
                 f.write(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}\n")
                 prev_date = start_scheduled.strftime('%Y/%m/%d')
             for video in result[start_scheduled]:
-                # NOTE: print time
+                # NOTE: video time (available at)
                 if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
                     print(start_scheduled.strftime('%H:%M'))
                     f.write(f"{start_scheduled.strftime('%H:%M')}\n")
                     prev_time = start_scheduled.strftime('%H:%M (%Y/%m/%d)')
-                # NOTE: print channel name
+                # NOTE: channel name
                 if video['status'] == 'Collabs':
                     if check_channel_in_list(video['collabs_channel'], liver_list):
                         print(f"{video['collabs_channel']}")
@@ -184,10 +184,9 @@ if __name__ == "__main__":
                 else:
                     print(f"{video['name']}")
                     f.write(f"{video['name']}")
-                # NOTE: print video title
+                # NOTE: video title
                 print(f"{video['title']}")
                 f.write(f"{video['title']}\n")
-                # NOTE: print video url
+                # NOTE: video url
                 print(f"{video['url']}\n")
                 f.write(f"{video['url']}\n\n")
-
