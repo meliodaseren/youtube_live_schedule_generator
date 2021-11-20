@@ -20,6 +20,14 @@ from datetime import datetime, timezone, timedelta, date
 console = Console()
 result = defaultdict(dict)
 
+# Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
+if platform == "linux" or platform == "linux2":
+    pass
+elif platform == "darwin": # macOS
+    pass
+elif platform == "win32": # Windows
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 def args_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("specify_date", nargs='?', type=str,
@@ -32,6 +40,10 @@ def args_parser():
             sys.exit(1)
     else:
         return args.specify_date
+
+def parse_list(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        return [line.strip() for line in f.read().splitlines()]
 
 def date_formatter(specify):
     if specify:
@@ -195,17 +207,6 @@ if __name__ == "__main__":
 
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
-
-    with open('liver.list', 'r', encoding='utf-8') as f:
-        liver_list = [line.strip() for line in f.read().splitlines()]
-
-    # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
-    if platform == "linux" or platform == "linux2":
-        pass
-    elif platform == "darwin": # macOS
-        pass
-    elif platform == "win32": # Windows
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
+    liver_list = parse_list('liver.list')
     asyncio.run(main())
     print_schedule(result)
