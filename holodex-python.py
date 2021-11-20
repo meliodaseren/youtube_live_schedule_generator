@@ -10,6 +10,7 @@ Python wrapper
 
 import sys
 import asyncio
+import argparse
 from holodex.client import HolodexClient
 from rich.console import Console
 from sys import platform
@@ -18,34 +19,35 @@ from datetime import datetime, timezone, timedelta, date
 
 console = Console()
 result = defaultdict(dict)
-today_date, specify_date = "", ""
 
-try:
-    date_str = [i for i in str(sys.argv[1])]
-    y = int('20' + ''.join(date_str[0:2]))
-    m = int(''.join(date_str[2:4]))
-    d = int(''.join(date_str[4:6]))
-    specify_date = datetime(y, m, d, 0, 0)
-    # specify_date = datetime(2021, 11, 3, 0, 0)
-except IndexError:
-    pass
+def args_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("specify_date", nargs='?', type=str,
+                        help="Specify date: 211120")
+    args = parser.parse_args()
+    if args.specify_date:
+        if len(args.specify_date) == 6:
+            return args.specify_date
+        else:
+            sys.exit(1)
+    else:
+        return args.specify_date
 
-if specify_date:
-    today_date = specify_date
-else:
-    today_date = datetime.combine(date.today(), datetime.min.time())
-tomorrow_date = today_date + timedelta(days=1)
+def date_formatter(specify):
+    if specify:
+        date_str = [i for i in str(specify)]
+        y = int('20' + ''.join(date_str[0:2]))
+        m = int(''.join(date_str[2:4]))
+        d = int(''.join(date_str[4:6]))
+        specify = datetime(y, m, d, 0, 0)
+        today = specify
+        print(f"Specify Schedule {today}\n")
+    else:
+        today = datetime.combine(date.today(), datetime.min.time())
+        print(f"Today's Schedule {today}\n")
 
-with open('liver.list', 'r', encoding='utf-8') as f:
-    liver_list = [line.strip() for line in f.read().splitlines()]
-
-# Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
-if platform == "linux" or platform == "linux2":
-    pass
-elif platform == "darwin": # macOS
-    pass
-elif platform == "win32": # Windows
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    tomorrow = today + timedelta(days=1)
+    return specify, today, tomorrow
 
 def utc_to_loacl(utc_dt):
     tw = timezone(timedelta(hours=+8))
@@ -74,31 +76,33 @@ async def main():
             name = channel.name
             # print(f'{channel.subscriber_count}')
 
+            """
             # NOTE: Live/Upcoming Videos (ライブ配信)
-#            today_schedule = {
-#                "channel_id": channel_id,
-#                # HACK: Max upcoming hours: 18
-#                "max_upcoming_hours": 18
-#            }
-#            live = await client.get_live_streams(today_schedule)
-#            for stream in live:
-#                start_scheduled = utc_to_loacl(stream['start_scheduled'])
-#                title = stream['title']
-#                url = f"https://youtu.be/{stream['id']}"
-#
-#                if check_url_exist(liver, url, result):
-#                    continue
-#
-#                # Create dictionary
-#                if not result[start_scheduled]:
-#                    result[start_scheduled] = []
-#                video_info = {
-#                    'name': name,
-#                    'title': title,
-#                    'url': url,
-#                    'status': 'Live/Upcoming'
-#                }
-#                result[start_scheduled].append(video_info)
+            today_schedule = {
+                "channel_id": channel_id,
+                # HACK: Max upcoming hours: 18
+                "max_upcoming_hours": 18
+            }
+            live = await client.get_live_streams(today_schedule)
+            for stream in live:
+                start_scheduled = utc_to_loacl(stream['start_scheduled'])
+                title = stream['title']
+                url = f"https://youtu.be/{stream['id']}"
+
+                if check_url_exist(liver, url, result):
+                    continue
+
+                # Create dictionary
+                if not result[start_scheduled]:
+                    result[start_scheduled] = []
+                video_info = {
+                    'name': name,
+                    'title': title,
+                    'url': url,
+                    'status': 'Live/Upcoming'
+                }
+                result[start_scheduled].append(video_info)
+            """
 
             # NOTE: Archive Videos (アーカイブ)
             # HACK: Limit archive videos: 5
@@ -152,11 +156,7 @@ async def main():
                     }
                     result[start_scheduled].append(video_info)
 
-if __name__ == "__main__":
-    print(f"Today's Schedule {today_date}\n")
-
-    asyncio.run(main())
-
+def print_schedule(result_dict):
     prev_date = ""
     prev_time = ""
     with open('test.output', 'w', encoding='utf8') as f:
@@ -190,3 +190,22 @@ if __name__ == "__main__":
                 # NOTE: video url
                 print(f"{video['url']}\n")
                 f.write(f"{video['url']}\n\n")
+
+if __name__ == "__main__":
+
+    specify_date = args_parser()
+    specify_date, today_date, tomorrow_date = date_formatter(specify_date)
+
+    with open('liver.list', 'r', encoding='utf-8') as f:
+        liver_list = [line.strip() for line in f.read().splitlines()]
+
+    # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
+    if platform == "linux" or platform == "linux2":
+        pass
+    elif platform == "darwin": # macOS
+        pass
+    elif platform == "win32": # Windows
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    asyncio.run(main())
+    print_schedule(result)
