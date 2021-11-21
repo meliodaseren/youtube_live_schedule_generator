@@ -204,9 +204,9 @@ def print_schedule(result_dict):
                 f.write(f"{video['url']}\n\n")
 
 if __name__ == "__main__":
-
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
     liver_list = parse_list('liver.list')
     asyncio.run(main())
     print_schedule(result)
+
