@@ -209,4 +209,3 @@ if __name__ == "__main__":
     liver_list = parse_list('liver.list')
     asyncio.run(main())
     print_schedule(result)
-
