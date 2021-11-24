@@ -191,8 +191,10 @@ def print_schedule(result_dict):
                         f.write(f"{video['collabs_channel']}\n")
                     else:
                         #TODO: only list the first one liver
-                        print(f"{video['collabs_channel']} ({video['name']} 合作)")
-                        f.write(f"{video['collabs_channel']} ({video['name']} 合作)\n")
+                        # print(f"{video['collabs_channel']} ({video['name']} 合作)")
+                        # f.write(f"{video['collabs_channel']} ({video['name']} 合作)\n")
+                        print(f"{video['collabs_channel']} (合作)")
+                        f.write(f"{video['collabs_channel']} (合作)\n")
                 else:
                     print(f"{video['name']}")
                     f.write(f"{video['name']}")
