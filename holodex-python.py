@@ -11,6 +11,7 @@ Python wrapper
 import sys
 import asyncio
 import argparse
+from time import sleep
 from holodex.client import HolodexClient
 from rich.console import Console
 from sys import platform
@@ -43,7 +44,7 @@ def args_parser():
 
 def parse_list(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
-        return [line.strip() for line in f.read().splitlines()]
+        return [line.strip() for line in f.read().splitlines() if not '#' in line]
 
 def date_formatter(specify):
     if specify:
@@ -78,11 +79,10 @@ def check_url_exist(name: str, url: str, video_dict: dict):
         console.print(f"[bold yellow][WARN][/bold yellow] skip duplicate videos: {url} ({name})")
         return True
 
-async def main():
+async def main(liver_list: list):
     async with HolodexClient() as client:
         for liver in liver_list:
             search = await client.autocomplete(liver)
-
             channel_id = search.contents[0].value
             channel = await client.channel(channel_id)
             name = channel.name
@@ -167,6 +167,7 @@ async def main():
                         'status': 'Collabs'
                     }
                     result[start_scheduled].append(video_info)
+            # sleep(1)
 
 def print_schedule(result_dict):
     prev_date = ""
@@ -208,6 +209,8 @@ def print_schedule(result_dict):
 if __name__ == "__main__":
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
-    liver_list = parse_list('liver.list')
-    asyncio.run(main())
+    liver_list = parse_list('liver.FPS.list')
+    asyncio.run(main(liver_list))
+    liver_list = parse_list('liver.VSPO.list')
+    asyncio.run(main(liver_list))
     print_schedule(result)
