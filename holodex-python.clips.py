@@ -110,7 +110,6 @@ if __name__ == "__main__":
             # if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
                 # print(start_scheduled.strftime('%H:%M'))
                 # prev_time = start_scheduled.strftime('%H:%M (%Y/%m/%d)')
-            # NOTE: print channel name
             # if video['status'] == 'Clips':
                 # if check_channel_in_list(video['clips_channel'], liver_list):
                     # print(f"{video['clips_channel']}")
