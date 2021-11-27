@@ -79,7 +79,7 @@ def check_url_exist(name: str, url: str, video_dict: dict):
         console.print(f"[bold yellow][WARN][/bold yellow] skip duplicate videos: {url} ({name})")
         return True
 
-async def main(liver_list: list):
+async def get_live_stream(liver_list: list):
     async with HolodexClient() as client:
         for liver in liver_list:
             search = await client.autocomplete(liver)
@@ -87,7 +87,6 @@ async def main(liver_list: list):
             channel = await client.channel(channel_id)
             name = channel.name
             # print(f'{channel.subscriber_count}')
-
             """
             # NOTE: Live/Upcoming Videos (ライブ配信)
             today_schedule = {
@@ -141,6 +140,14 @@ async def main(liver_list: list):
                     }
                     result[start_scheduled].append(video_info)
 
+async def get_collabs_stream(liver_list: list):
+    async with HolodexClient() as client:
+        for liver in liver_list:
+            search = await client.autocomplete(liver)
+            channel_id = search.contents[0].value
+            channel = await client.channel(channel_id)
+            name = channel.name
+            # print(f'{channel.subscriber_count}')
             # NOTE: Collabs Videos (コラボ)
             # HACK: Limit archive videos: 5
             videos = await client.videos_from_channel(channel_id, "collabs", limit=5)
@@ -167,7 +174,6 @@ async def main(liver_list: list):
                         'status': 'Collabs'
                     }
                     result[start_scheduled].append(video_info)
-            # sleep(1)
 
 def print_schedule(result_dict):
     prev_date = ""
@@ -191,11 +197,11 @@ def print_schedule(result_dict):
                         print(f"{video['collabs_channel']}")
                         f.write(f"{video['collabs_channel']}\n")
                     else:
+                        print(f"{video['collabs_channel']} (合作)")
+                        f.write(f"{video['collabs_channel']} (合作)\n")
                         #TODO: only list the first one liver
                         # print(f"{video['collabs_channel']} ({video['name']} 合作)")
                         # f.write(f"{video['collabs_channel']} ({video['name']} 合作)\n")
-                        print(f"{video['collabs_channel']} (合作)")
-                        f.write(f"{video['collabs_channel']} (合作)\n")
                 else:
                     print(f"{video['name']}")
                     f.write(f"{video['name']}")
@@ -209,8 +215,11 @@ def print_schedule(result_dict):
 if __name__ == "__main__":
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
-    liver_list = parse_list('liver.FPS.list')
-    asyncio.run(main(liver_list))
-    liver_list = parse_list('liver.VSPO.list')
-    asyncio.run(main(liver_list))
+    liver_lists = ['liver.VSPO.list', 'liver.FPS.list']
+    for _ in liver_lists:
+        liver_list = parse_list(_)
+        asyncio.run(get_live_stream(liver_list))
+        sleep(1)
+        asyncio.run(get_collabs_stream(liver_list))
+        sleep(1)
     print_schedule(result)
