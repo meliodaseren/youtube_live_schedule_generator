@@ -17,6 +17,7 @@ from rich.console import Console
 from sys import platform
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta, date
+from aiohttp import client_exceptions
 
 console = Console()
 result = defaultdict(dict)
@@ -82,53 +83,24 @@ def check_url_exist(name: str, url: str, video_dict: dict):
 async def get_live_stream(liver_list: list):
     async with HolodexClient() as client:
         for liver in liver_list:
-            search = await client.autocomplete(liver)
             try:
+                search = await client.autocomplete(liver)
                 channel_id = search.contents[0].value
-            except IndexError:
-                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver}")
-                continue
-            channel = await client.channel(channel_id)
-            name = channel.name
-            # print(f'{channel.subscriber_count}')
-            """
-            # NOTE: Live/Upcoming Videos (ライブ配信)
-            today_schedule = {
-                "channel_id": channel_id,
-                # HACK: Max upcoming hours: 18
-                "max_upcoming_hours": 18
-            }
-            live = await client.get_live_streams(today_schedule)
-            for stream in live:
-                start_scheduled = utc_to_loacl(stream['start_scheduled'])
-                title = stream['title']
-                url = f"https://youtu.be/{stream['id']}"
+                channel = await client.channel(channel_id)
+                name = channel.name
+                # print(f'{channel.subscriber_count}')
 
-                if check_url_exist(liver, url, result):
-                    continue
-
-                # Create dictionary
-                if not result[start_scheduled]:
-                    result[start_scheduled] = []
-                video_info = {
-                    'name': name,
-                    'title': title,
-                    'url': url,
-                    'status': 'Live/Upcoming'
+                # NOTE: Live/Upcoming Videos (ライブ配信)
+                today_schedule = {
+                    "channel_id": channel_id,
+                    # HACK: Max upcoming hours: 18
+                    "max_upcoming_hours": 18
                 }
-                result[start_scheduled].append(video_info)
-            """
-
-            # NOTE: Archive Videos (アーカイブ)
-            # HACK: Limit archive videos: 5
-            videos = await client.videos_from_channel(channel_id, "videos", limit=5)
-            for idx in range(len(videos.contents)):
-                start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
-                # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
-                if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
-                    # print(f'[PASS] {astart_scheduled} > {today_date}')
-                    title = videos.contents[idx].title
-                    url = f"https://youtu.be/{videos.contents[idx].id}"
+                live = await client.get_live_streams(today_schedule)
+                for stream in live:
+                    start_scheduled = utc_to_loacl(stream['start_scheduled'])
+                    title = stream['title']
+                    url = f"https://youtu.be/{stream['id']}"
 
                     if check_url_exist(liver, url, result):
                         continue
@@ -140,48 +112,83 @@ async def get_live_stream(liver_list: list):
                         'name': name,
                         'title': title,
                         'url': url,
-                        'status': 'Archive'
+                        'status': 'Live/Upcoming'
                     }
                     result[start_scheduled].append(video_info)
+
+                # NOTE: Archive Videos (アーカイブ)
+                # HACK: Limit archive videos: 5
+                videos = await client.videos_from_channel(channel_id, "videos", limit=5)
+                for idx in range(len(videos.contents)):
+                    start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
+                    # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
+                    if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
+                        # print(f'[PASS] {astart_scheduled} > {today_date}')
+                        title = videos.contents[idx].title
+                        url = f"https://youtu.be/{videos.contents[idx].id}"
+
+                        if check_url_exist(liver, url, result):
+                            continue
+
+                        # Create dictionary
+                        if not result[start_scheduled]:
+                            result[start_scheduled] = []
+                        video_info = {
+                            'name': name,
+                            'title': title,
+                            'url': url,
+                            'status': 'Archive'
+                        }
+                        result[start_scheduled].append(video_info)
+                sleep(0.5)
+            except IndexError as e:
+                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
+                continue
+            except client_exceptions.ContentTypeError as e:
+                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
+                continue
 
 async def get_collabs_stream(liver_list: list):
     async with HolodexClient() as client:
         for liver in liver_list:
-            search = await client.autocomplete(liver)
             try:
+                search = await client.autocomplete(liver)
                 channel_id = search.contents[0].value
-            except IndexError:
-                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver}")
+                channel = await client.channel(channel_id)
+                name = channel.name
+                # print(f'{channel.subscriber_count}')
+                # NOTE: Collabs Videos (コラボ)
+                # HACK: Limit archive videos: 5
+                videos = await client.videos_from_channel(channel_id, "collabs", limit=5)
+                for idx in range(len(videos.contents)):
+                    start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
+                    # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
+                    if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
+                        # print(f'[PASS] {astart_scheduled} > {today_date}')
+                        title = videos.contents[idx].title
+                        collabs_channel = videos.contents[idx].channel.name
+                        url = f"https://youtu.be/{videos.contents[idx].id}"
+
+                        if check_url_exist(liver, url, result):
+                            continue
+
+                        # Create dictionary
+                        if not result[start_scheduled]:
+                            result[start_scheduled] = []
+                        video_info = {
+                            'name': name,
+                            'collabs_channel': collabs_channel,
+                            'title': title,
+                            'url': url,
+                            'status': 'Collabs'
+                        }
+                        result[start_scheduled].append(video_info)
+            except IndexError as e:
+                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
                 continue
-            channel = await client.channel(channel_id)
-            name = channel.name
-            # print(f'{channel.subscriber_count}')
-            # NOTE: Collabs Videos (コラボ)
-            # HACK: Limit archive videos: 5
-            videos = await client.videos_from_channel(channel_id, "collabs", limit=5)
-            for idx in range(len(videos.contents)):
-                start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
-                # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
-                if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
-                    # print(f'[PASS] {astart_scheduled} > {today_date}')
-                    title = videos.contents[idx].title
-                    collabs_channel = videos.contents[idx].channel.name
-                    url = f"https://youtu.be/{videos.contents[idx].id}"
-
-                    if check_url_exist(liver, url, result):
-                        continue
-
-                    # Create dictionary
-                    if not result[start_scheduled]:
-                        result[start_scheduled] = []
-                    video_info = {
-                        'name': name,
-                        'collabs_channel': collabs_channel,
-                        'title': title,
-                        'url': url,
-                        'status': 'Collabs'
-                    }
-                    result[start_scheduled].append(video_info)
+            except client_exceptions.ContentTypeError as e:
+                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
+                continue
 
 def print_schedule(result_dict):
     prev_date = ""
@@ -223,11 +230,10 @@ def print_schedule(result_dict):
 if __name__ == "__main__":
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
+    # liver_lists = ['liver.VSPO.list']
     liver_lists = ['liver.VSPO.list', 'liver.FPS.list']
     for _ in liver_lists:
         liver_list = parse_list(_)
         asyncio.run(get_live_stream(liver_list))
-        sleep(1)
         asyncio.run(get_collabs_stream(liver_list))
-        sleep(1)
     print_schedule(result)
