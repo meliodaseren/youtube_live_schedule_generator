@@ -83,7 +83,11 @@ async def get_live_stream(liver_list: list):
     async with HolodexClient() as client:
         for liver in liver_list:
             search = await client.autocomplete(liver)
-            channel_id = search.contents[0].value
+            try:
+                channel_id = search.contents[0].value
+            except IndexError:
+                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver}")
+                continue
             channel = await client.channel(channel_id)
             name = channel.name
             # print(f'{channel.subscriber_count}')
@@ -144,7 +148,11 @@ async def get_collabs_stream(liver_list: list):
     async with HolodexClient() as client:
         for liver in liver_list:
             search = await client.autocomplete(liver)
-            channel_id = search.contents[0].value
+            try:
+                channel_id = search.contents[0].value
+            except IndexError:
+                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver}")
+                continue
             channel = await client.channel(channel_id)
             name = channel.name
             # print(f'{channel.subscriber_count}')
