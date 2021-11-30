@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Holodex API Documentation
     https://holodex.stoplight.io/
 Python wrapper
     https://github.com/ombe1229/holodex
 """
-
 import sys
 import asyncio
 import argparse
