@@ -192,14 +192,15 @@ async def get_collabs_stream(liver_list: list):
 def print_schedule(result_dict):
     prev_date = ""
     prev_time = ""
+    count = 0
     with open('test.output', 'w', encoding='utf8') as f:
-        for start_scheduled in sorted(result):
+        for start_scheduled in sorted(result_dict):
             # NOTE: date
             if prev_date != start_scheduled.strftime('%Y/%m/%d'):
                 print(start_scheduled.strftime('--- %Y/%m/%d ---'))
                 f.write(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}\n")
                 prev_date = start_scheduled.strftime('%Y/%m/%d')
-            for video in result[start_scheduled]:
+            for video in result_dict[start_scheduled]:
                 # NOTE: video time (available at)
                 if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
                     print(start_scheduled.strftime('%H:%M'))
@@ -225,6 +226,8 @@ def print_schedule(result_dict):
                 # NOTE: video url
                 print(f"{video['url']}\n")
                 f.write(f"{video['url']}\n\n")
+                count += 1
+    print(f'Total {count} videos')
 
 if __name__ == "__main__":
     specify_date = args_parser()
