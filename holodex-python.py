@@ -6,13 +6,12 @@ Holodex API Documentation
 Python wrapper
     https://github.com/ombe1229/holodex
 """
-import sys
-import asyncio
-import argparse
-from time import sleep
+import re, sys, asyncio
 from holodex.client import HolodexClient
-from rich.console import Console
+from time import sleep
 from sys import platform
+from rich.console import Console
+from argparse import ArgumentParser
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta, date
 from aiohttp import client_exceptions
@@ -29,7 +28,7 @@ elif platform == "win32": # Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 def args_parser():
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument("specify_date", nargs='?', type=str,
                         help="Specify date: 211120")
     args = parser.parse_args()
@@ -65,6 +64,46 @@ def utc_to_loacl(utc_dt):
     tw = timezone(timedelta(hours=+8))
     schedule_time = datetime.strptime(utc_dt, "%Y-%m-%dT%H:%M:%S.%fZ")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
+
+ANNOYING_CHARS = (
+    ('\u2000', ''),
+    ('\u2001', ''),
+    ('\u2002', ''),
+    ('\u2003', ''),
+    ('\u2004', ''),
+    ('\u2005', ''),
+    ('\u2006', ''),
+    ('\u2007', ''),
+    ('\u2008', ''),
+    ('\u2009', ''),
+    ('\u200a', ''),
+    ('\u200b', ''),
+    ('\u200c', ''),
+    ('\u200d', ''),
+    ('\u200e', ''),
+    ('\u200f', ''),
+    ('\u2010', '-'),
+    ('\u2011', '-'),
+    ('\u2012', '-'),
+    ('\u2013', '-'),
+    ('\u2014', '-'),
+    ('\u2014', '-'),
+    ('\u2018', "'"),
+    ('\u201b', "'"),
+    ('\u201c', '"'),
+    ('\u201c', '"'),
+    ('\u201d', '"'),
+    ('\u201e', '"'),
+    ('\u201f', '"')
+)
+
+def remove_annoying_unicode(input_str):
+    """
+    https://www.utf8-chartable.de/unicode-utf8-table.pl?start=8064&names=-&utf8=string-literal
+    """
+    for _hex, _char in ANNOYING_CHARS:
+        input_str = input_str.replace(_hex, _char)
+    return input_str
 
 def check_channel_in_list(channel_name: str, liver_list: list):
     for liver in liver_list:
@@ -221,8 +260,9 @@ def print_schedule(result_dict):
                     print(f"{video['name']}")
                     f.write(f"{video['name']}")
                 # NOTE: video title
-                print(f"{video['title']}")
-                f.write(f"{video['title']}\n")
+                title_format = remove_annoying_unicode(video['title'])
+                print(f"{title_format}")
+                f.write(f"{title_format}\n")
                 # NOTE: video url
                 print(f"{video['url']}\n")
                 f.write(f"{video['url']}\n\n")
@@ -232,7 +272,6 @@ def print_schedule(result_dict):
 if __name__ == "__main__":
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
-    # liver_lists = ['liver.VSPO.list']
     liver_lists = ['liver.VSPO.list', 'liver.FPS.list']
     for _ in liver_lists:
         liver_list = parse_list(_)
