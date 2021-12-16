@@ -27,44 +27,6 @@ elif platform == "darwin": # macOS
 elif platform == "win32": # Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-def args_parser():
-    parser = ArgumentParser()
-    parser.add_argument("specify_date", nargs='?', type=str,
-                        help="Specify date: 211120")
-    args = parser.parse_args()
-    if args.specify_date:
-        if len(args.specify_date) == 6:
-            return args.specify_date
-        else:
-            sys.exit(1)
-    else:
-        return args.specify_date
-
-def parse_list(filepath):
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return [line.strip() for line in f.read().splitlines() if not '#' in line]
-
-def date_formatter(specify):
-    if specify:
-        date_str = [i for i in str(specify)]
-        y = int('20' + ''.join(date_str[0:2]))
-        m = int(''.join(date_str[2:4]))
-        d = int(''.join(date_str[4:6]))
-        specify = datetime(y, m, d, 0, 0)
-        today = specify
-        print(f"Specify Schedule {today}\n")
-    else:
-        today = datetime.combine(date.today(), datetime.min.time())
-        print(f"Today's Schedule {today}\n")
-
-    tomorrow = today + timedelta(days=1)
-    return specify, today, tomorrow
-
-def utc_to_loacl(utc_dt):
-    tw = timezone(timedelta(hours=+8))
-    schedule_time = datetime.strptime(utc_dt, "%Y-%m-%dT%H:%M:%S.%fZ")
-    return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
-
 ANNOYING_CHARS = (
     ('\u2000', ''),
     ('\u2001', ''),
@@ -104,6 +66,44 @@ def remove_annoying_unicode(input_str):
     for _hex, _char in ANNOYING_CHARS:
         input_str = input_str.replace(_hex, _char)
     return input_str
+
+def args_parser():
+    parser = ArgumentParser()
+    parser.add_argument("specify_date", nargs='?', type=str,
+                        help="Specify date: 211120")
+    args = parser.parse_args()
+    if args.specify_date:
+        if len(args.specify_date) == 6:
+            return args.specify_date
+        else:
+            sys.exit(1)
+    else:
+        return args.specify_date
+
+def parse_list(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        return [line.strip() for line in f.read().splitlines() if not '#' in line]
+
+def date_formatter(specify):
+    if specify:
+        date_str = [i for i in str(specify)]
+        y = int('20' + ''.join(date_str[0:2]))
+        m = int(''.join(date_str[2:4]))
+        d = int(''.join(date_str[4:6]))
+        specify = datetime(y, m, d, 0, 0)
+        today = specify
+        print(f"Specify Schedule {today}\n")
+    else:
+        today = datetime.combine(date.today(), datetime.min.time())
+        print(f"Today's Schedule {today}\n")
+
+    tomorrow = today + timedelta(days=1)
+    return specify, today, tomorrow
+
+def utc_to_loacl(utc_dt):
+    tw = timezone(timedelta(hours=+8))
+    schedule_time = datetime.strptime(utc_dt, "%Y-%m-%dT%H:%M:%S.%fZ")
+    return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
 def check_channel_in_list(channel_name: str, liver_list: list):
     for liver in liver_list:
