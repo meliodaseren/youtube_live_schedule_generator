@@ -6,7 +6,7 @@ Holodex API Documentation
 Python wrapper
     https://github.com/ombe1229/holodex
 """
-import re, sys, asyncio
+import sys, asyncio
 from holodex.client import HolodexClient
 from time import sleep
 from sys import platform
