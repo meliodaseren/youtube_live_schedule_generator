@@ -236,7 +236,7 @@ def print_schedule(result_dict):
         for start_scheduled in sorted(result_dict):
             # NOTE: date
             if prev_date != start_scheduled.strftime('%Y/%m/%d'):
-                print(start_scheduled.strftime('--- %Y/%m/%d ---'))
+                console.print(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}")
                 f.write(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}\n")
                 prev_date = start_scheduled.strftime('%Y/%m/%d')
             for video in result_dict[start_scheduled]:
