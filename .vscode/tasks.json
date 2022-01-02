@@ -9,7 +9,8 @@
             "command": "${config:python.pythonPath}",
             "args": [
                 // Ask msbuild to generate full paths for file names.
-                "${file}"
+                "holodex-python.py"
+                // "${file}"
             ],
             "group": {
                 "kind": "build",
