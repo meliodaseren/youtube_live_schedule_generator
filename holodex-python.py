@@ -6,7 +6,7 @@ Holodex API Documentation
 Python wrapper
     https://github.com/ombe1229/holodex
 """
-import sys, asyncio
+import sys, asyncio, re
 from holodex.client import HolodexClient
 from time import sleep
 from sys import platform
@@ -100,9 +100,15 @@ def date_formatter(specify):
     tomorrow = today + timedelta(days=1)
     return specify, today, tomorrow
 
-def utc_to_loacl(utc_dt):
+def floor_minutes(time_str):
+    pattern = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}:)(\d)(\d)(:\d{2}.\d{3}Z)")
+    regex = re.match(pattern, time_str)
+    return f'{regex.group(1)}{regex.group(2)}0{regex.group(4)}'
+
+def utc_to_loacl(time_str):
     tw = timezone(timedelta(hours=+8))
-    schedule_time = datetime.strptime(utc_dt, "%Y-%m-%dT%H:%M:%S.%fZ")
+    time_str = floor_minutes(time_str)
+    schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
 def check_channel_in_list(channel_name: str, liver_list: list):
@@ -158,7 +164,7 @@ async def get_live_stream(liver_list: list):
                 videos = await client.videos_from_channel(channel_id, "videos", limit=5)
                 for idx in range(len(videos.contents)):
                     start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
-                    # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
+
                     if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
                         # print(f'[PASS] {astart_scheduled} > {today_date}')
                         title = videos.contents[idx].title
@@ -195,11 +201,11 @@ async def get_collabs_stream(liver_list: list):
                 name = channel.name
                 # print(f'{channel.subscriber_count}')
                 # NOTE: Collabs Videos (コラボ)
-                # HACK: Limit archive videos: 5
-                videos = await client.videos_from_channel(channel_id, "collabs", limit=5)
+                # HACK: Limit archive videos: 3
+                videos = await client.videos_from_channel(channel_id, "collabs", limit=3)
                 for idx in range(len(videos.contents)):
                     start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
-                    # print(f'       {liver} {idx} {astart_scheduled} vs {today_date}')
+
                     if today_date < start_scheduled.replace(tzinfo=None) < tomorrow_date:
                         # print(f'[PASS] {astart_scheduled} > {today_date}')
                         title = videos.contents[idx].title
@@ -268,6 +274,14 @@ def print_schedule(result_dict):
                 f.write(f"{video['url']}\n\n")
                 count += 1
     print(f'Total {count} videos')
+
+def test_floor_minutes_string():
+    print(floor_minutes('2023-04-02T03:05:00.000Z'))
+    print(floor_minutes('2023-04-02T12:00:00.000Z'))
+    print(floor_minutes('2023-04-02T09:31:00.000Z'))
+    print(floor_minutes('2023-04-02T04:27:00.000Z'))
+    print(floor_minutes('2023-04-02T23:59:00.000Z'))
+    sys.exit()
 
 if __name__ == "__main__":
     specify_date = args_parser()
