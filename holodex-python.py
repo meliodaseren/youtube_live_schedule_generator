@@ -66,7 +66,8 @@ async def get_live_stream(liver_list: list):
                 }
                 live = await client.get_live_streams(today_schedule)
                 for stream in live:
-                    start_scheduled = utc_to_loacl(stream['start_scheduled'])
+                    # start_scheduled = utc_to_loacl(stream['start_scheduled'])
+                    start_scheduled = utc_to_loacl(stream['available_at'])
                     title = stream['title']
                     url = f"https://youtu.be/{stream['id']}"
 
@@ -211,7 +212,10 @@ def test_floor_minutes_string():
 if __name__ == "__main__":
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
-    liver_lists = ['list/liver.VSPO.list', 'list/liver.FPS.list']
+    liver_lists = [
+        'list/liver.VSPO.list',
+        'list/liver.FPS.list'
+    ]
     for _ in liver_lists:
         liver_list = parse_list(_)
         asyncio.run(get_live_stream(liver_list))
