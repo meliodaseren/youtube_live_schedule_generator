@@ -109,7 +109,7 @@ async def get_live_stream(liver_list: list):
                             'status': 'Archive'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.1)
+                sleep(0.3)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
                 continue
@@ -152,7 +152,7 @@ async def get_collabs_stream(liver_list: list):
                             'status': 'Collabs'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.1)
+                sleep(0.3)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
                 continue
@@ -220,4 +220,5 @@ if __name__ == "__main__":
         liver_list = parse_list(_)
         asyncio.run(get_live_stream(liver_list))
         asyncio.run(get_collabs_stream(liver_list))
+        sleep(5)
     print_schedule(result)
