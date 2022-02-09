@@ -6,7 +6,8 @@
         {
             "label": "Run Python Code",
             "type": "shell",
-            "command": "${config:python.pythonPath}",
+            // "command": "${config:python.pythonPath}",
+            "command": "python",
             "args": [
                 // Ask msbuild to generate full paths for file names.
                 "holodex-python.py"
