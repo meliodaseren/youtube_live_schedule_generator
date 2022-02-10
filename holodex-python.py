@@ -51,6 +51,7 @@ def args_parser():
 async def get_live_stream(liver_list: list):
     async with HolodexClient() as client:
         for liver in liver_list:
+            print(liver)
             try:
                 search = await client.autocomplete(liver)
                 channel_id = search.contents[0].value
@@ -84,6 +85,7 @@ async def get_live_stream(liver_list: list):
                         'status': 'Live/Upcoming'
                     }
                     result[start_scheduled].append(video_info)
+                sleep(0.5)
 
                 # NOTE: Archive Videos (アーカイブ)
                 # HACK: Limit archive videos: 5
@@ -109,7 +111,7 @@ async def get_live_stream(liver_list: list):
                             'status': 'Archive'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.3)
+                sleep(0.5)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
                 continue
@@ -152,7 +154,7 @@ async def get_collabs_stream(liver_list: list):
                             'status': 'Collabs'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.3)
+                sleep(0.5)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
                 continue
