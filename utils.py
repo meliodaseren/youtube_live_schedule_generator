@@ -49,7 +49,7 @@ def check_channel_in_list(channel_name: str, liver_list: list):
 def check_url_exist(name: str, url: str, video_dict: dict):
     # TODO: check the same url with live/upcoming videos
     if url in [v['url'] for t in video_dict for v in video_dict[t]]:
-        console.print(f"[bold yellow][WARN][/bold yellow] skip duplicate videos: {url} ({name})")
+        # console.print(f"[bold yellow][WARN][/bold yellow] skip duplicate videos: {url} ({name})")
         return True
 
 def remove_annoying_unicode(input_str):
