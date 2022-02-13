@@ -110,6 +110,6 @@ def print_videos():
 if __name__ == "__main__":
     start_date, end_date = get_date(input_days=3)
     print(f"Clips start from {start_date} to {end_date}\n")
-    liver_lists = parse_list('list/liver.clips.list')
+    liver_lists = parse_list('list/liver.VSPO.list')
     asyncio.run(main(liver_lists, start_date, end_date))
     print_videos()
