@@ -62,7 +62,6 @@ async def get_live_stream(liver_list: list):
                 # NOTE: Live/Upcoming Videos (ライブ配信)
                 today_schedule = {
                     "channel_id": channel_id,
-                    # HACK: Max upcoming hours: 18
                     "max_upcoming_hours": 18
                 }
                 live = await client.get_live_streams(today_schedule)
@@ -75,7 +74,6 @@ async def get_live_stream(liver_list: list):
                     if check_url_exist(liver, url, result):
                         continue
 
-                    # Create dictionary
                     if not result[start_scheduled]:
                         result[start_scheduled] = []
                     video_info = {
@@ -101,7 +99,6 @@ async def get_live_stream(liver_list: list):
                         if check_url_exist(liver, url, result):
                             continue
 
-                        # Create dictionary
                         if not result[start_scheduled]:
                             result[start_scheduled] = []
                         video_info = {
@@ -143,7 +140,6 @@ async def get_collabs_stream(liver_list: list):
                         if check_url_exist(liver, url, result):
                             continue
 
-                        # Create dictionary
                         if not result[start_scheduled]:
                             result[start_scheduled] = []
                         video_info = {
@@ -187,9 +183,8 @@ def print_schedule(result_dict):
                     else:
                         print(f"{video['collabs_channel']} (合作)")
                         f.write(f"{video['collabs_channel']} (合作)\n")
-                        #TODO: only list the first one liver
-                        # print(f"{video['collabs_channel']} ({video['name']} 合作)")
-                        # f.write(f"{video['collabs_channel']} ({video['name']} 合作)\n")
+                        # print(f"{video['collabs_channel']}")
+                        # f.write(f"{video['collabs_channel']}\n")
                 else:
                     print(f"{video['name']}")
                     f.write(f"{video['name']}")
