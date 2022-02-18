@@ -11,7 +11,7 @@ console = Console()
 
 def utc_to_loacl(time_str):
     tw = timezone(timedelta(hours=+8))
-    time_str = floor_minutes(time_str)
+    # time_str = floor_minutes(time_str)
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
