@@ -11,6 +11,7 @@ Python wrapper
 import asyncio
 from holodex.client import HolodexClient
 from rich.console import Console
+from time import sleep
 from sys import platform
 from collections import defaultdict
 from datetime import (
@@ -82,6 +83,7 @@ async def main(liver_list, start_date, end_date):
                         'status': 'Clips'
                     }
                     result[start_scheduled].append(video_info)
+            sleep(1)
 
 def print_videos():
     prev_date = ""
