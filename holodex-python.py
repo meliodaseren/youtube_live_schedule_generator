@@ -83,7 +83,7 @@ async def get_live_stream(liver_list: list):
                         'status': 'Live/Upcoming'
                     }
                     result[start_scheduled].append(video_info)
-                sleep(0.5)
+                sleep(1)
 
                 # NOTE: Archive Videos (アーカイブ)
                 # HACK: Limit archive videos: 5
@@ -108,7 +108,7 @@ async def get_live_stream(liver_list: list):
                             'status': 'Archive'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.5)
+                sleep(1)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
                 continue
@@ -150,7 +150,7 @@ async def get_collabs_stream(liver_list: list):
                             'status': 'Collabs'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.5)
+                sleep(1)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} ({e})")
                 continue
@@ -210,6 +210,13 @@ if __name__ == "__main__":
     specify_date = args_parser()
     specify_date, today_date, tomorrow_date = date_formatter(specify_date)
     liver_lists = [
+        # 'list/liver.NIJISANJI_JP_2018.list',
+        # 'list/liver.NIJISANJI_JP_SEEDs.list',
+        # 'list/liver.NIJISANJI_JP_2019.list',
+        # 'list/liver.NIJISANJI_JP_2020.list',
+        # 'list/liver.NIJISANJI_KR.list',
+        # 'list/liver.NIJISANJI_ID.list',
+        # 'list/liver.NIJISANJI_EN.list',
         'list/liver.VSPO.list',
         'list/liver.FPS.list'
     ]
