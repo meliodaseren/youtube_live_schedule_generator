@@ -8,21 +8,18 @@ Python wrapper
     https://github.com/ombe1229/holodex
 """
 
-import asyncio
+import sys, asyncio
 from holodex.client import HolodexClient
 from rich.console import Console
 from time import sleep
 from sys import platform
+from argparse import ArgumentParser
 from collections import defaultdict
-from datetime import (
-    datetime,
-    timedelta,
-    date
-)
 from utils import (
     utc_to_loacl,
     check_url_exist,
-    parse_list
+    parse_list,
+    get_archive_date,
 )
 
 console = Console()
@@ -36,20 +33,23 @@ elif platform == "darwin": # macOS
 elif platform == "win32": # Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-def get_date(input_days=7):
-    specify_date = ""
-    # specify_date = datetime(2021, 11, 3, 0, 0)
-    if specify_date:
-        today_date = specify_date
-        first_date = today_date - datetime.timedelta(days=input_days)
+def args_parser():
+    parser = ArgumentParser()
+    parser.add_argument("specify_date", nargs='?', type=str,
+                        help="Specify date: 211120")
+    args = parser.parse_args()
+    if args.specify_date:
+        if len(args.specify_date) == 6:
+            return args.specify_date
+        else:
+            sys.exit(1)
     else:
-        today_date = datetime.combine(date.today(), datetime.min.time())
-        first_date = today_date - timedelta(days=input_days)
-    return first_date, today_date + timedelta(days=1)
+        return args.specify_date
 
 async def main(liver_list, start_date, end_date):
     async with HolodexClient() as client:
         for liver in liver_list:
+            print(liver)
             search = await client.autocomplete(liver)
 
             channel_id = search.contents[0].value
@@ -85,7 +85,7 @@ async def main(liver_list, start_date, end_date):
                     result[start_scheduled].append(video_info)
             sleep(1)
 
-def print_videos():
+def print_videos_information():
     prev_date = ""
     prev_time = ""
     for start_scheduled in sorted(result):
@@ -110,8 +110,15 @@ def print_videos():
             print(f"{video['url']}\n")
 
 if __name__ == "__main__":
-    start_date, end_date = get_date(input_days=3)
-    print(f"Clips start from {start_date} to {end_date}\n")
-    liver_lists = parse_list('list/liver.VSPO.list')
-    asyncio.run(main(liver_lists, start_date, end_date))
-    print_videos()
+    specify_date = args_parser()
+    specify_date, start_date, end_date = get_archive_date(specify_date)
+    liver_lists = [
+        # 'list/liver.Music.list',
+        'list/liver.VSPO.list',
+        # 'list/liver.FPS.list',
+    ]
+    for _ in liver_lists:
+        liver_list = parse_list(_)
+        asyncio.run(main(liver_list, start_date, end_date))
+        sleep(5)
+    print_videos_information()

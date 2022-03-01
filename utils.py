@@ -15,21 +15,39 @@ def utc_to_loacl(time_str):
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
-def date_formatter(specify):
+def get_live_date(specify, input_days=1):
     if specify:
         date_str = [i for i in str(specify)]
         y = int('20' + ''.join(date_str[0:2]))
         m = int(''.join(date_str[2:4]))
         d = int(''.join(date_str[4:6]))
         specify = datetime(y, m, d, 0, 0)
-        today = specify
-        print(f"Specify Schedule {today}\n")
+        first_day = specify
+        print(f"Specify Schedule {first_day}")
     else:
-        today = datetime.combine(date.today(), datetime.min.time())
-        print(f"Today's Schedule {today}\n")
+        first_day = datetime.combine(date.today(), datetime.min.time())
+        print(f"Today's Schedule {first_day}")
 
-    tomorrow = today + timedelta(days=1)
-    return specify, today, tomorrow
+    end_date = first_day + timedelta(days=input_days)
+    print(f"Schedule from {first_day} to {end_date}\n")
+    return specify, first_day, end_date
+
+def get_archive_date(specify, input_days=7):
+    if specify:
+        date_str = [i for i in str(specify)]
+        y = int('20' + ''.join(date_str[0:2]))
+        m = int(''.join(date_str[2:4]))
+        d = int(''.join(date_str[4:6]))
+        specify = datetime(y, m, d, 0, 0)
+        first_day = specify
+        print(f"Specify Schedule {first_day}")
+    else:
+        first_day = datetime.combine(date.today(), datetime.min.time())
+        print(f"Today's Schedule {first_day}")
+
+    prev_day = first_day - timedelta(days=input_days)
+    print(f"Videos from {prev_day} to {first_day}\n")
+    return specify, prev_day, first_day
 
 def floor_minutes(time_str):
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}:)(\d)(\d)(:\d{2}.\d{3}Z)")
@@ -38,6 +56,7 @@ def floor_minutes(time_str):
 
 def parse_list(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
+        print(f'parse {filepath}')
         return [line.strip() for line in f.read().splitlines() if not '#' in line]
 
 def check_channel_in_list(channel_name: str, liver_list: list):
@@ -91,3 +110,23 @@ ANNOYING_CHARS = (
     ('\u201e', '"'),
     ('\u201f', '"')
 )
+
+if __name__ == '__main__':
+    import sys
+    # from argparse import ArgumentParser
+
+    def args_parser():
+        specify_date = '220228'
+        if specify_date:
+            if len(specify_date) == 6:
+                return specify_date
+            else:
+                sys.exit(1)
+        else:
+            return specify_date
+    
+    input_date = args_parser()
+
+    specify_date, start_date, end_date = get_live_date(input_date)
+
+    specify_date, start_date, end_date = get_archive_date(input_date, input_days=3)
