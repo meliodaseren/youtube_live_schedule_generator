@@ -83,7 +83,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                         'status': 'Live/Upcoming'
                     }
                     result[start_scheduled].append(video_info)
-                sleep(1)
+                sleep(0.5)
 
                 # NOTE: Archive Videos (アーカイブ)
                 # HACK: Limit archive videos: 5
@@ -108,7 +108,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                             'status': 'Archive'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(1)
+                sleep(0.5)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (IndexError {e})")
                 continue
@@ -153,7 +153,7 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
                             'status': 'Collabs'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(1)
+                sleep(0.5)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (IndexError {e})")
                 continue
@@ -231,5 +231,5 @@ if __name__ == "__main__":
         liver_list = parse_list(_)
         asyncio.run(get_live_stream(liver_list, start_date, end_date))
         asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
-        sleep(5)
+        sleep(1)
     print_schedule(result)
