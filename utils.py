@@ -11,7 +11,7 @@ console = Console()
 
 def utc_to_loacl(time_str):
     tw = timezone(timedelta(hours=+8))
-    # time_str = floor_minutes(time_str)
+    time_str = floor_minutes(time_str)
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
@@ -50,9 +50,26 @@ def get_archive_date(specify, input_days=7):
     return specify, prev_day, first_day
 
 def floor_minutes(time_str):
-    pattern = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}:)(\d)(\d)(:\d{2}.\d{3}Z)")
+    pattern = re.compile(r"(\d{4}-\d{2}-\d{2})T(\d{2}):(\d)(\d):(\d{2}).(\d{3}Z)")
     regex = re.match(pattern, time_str)
-    return f'{regex.group(1)}{regex.group(2)}0{regex.group(4)}'
+    str_date = regex.group(1)
+    str_hours = regex.group(2)
+    str_minutes = f'{regex.group(3)}{regex.group(4)}'
+    str_seconds = regex.group(5)
+    str_zone = regex.group(6)
+    if int(regex.group(4)) >= 8:
+        str_minutes = f'{int(regex.group(3))+1}0'
+        if str_minutes == '60':
+            str_hours = int(str_hours) + 1
+            str_minutes = '00'
+    elif int(regex.group(4)) >= 4:
+        # 4, 5, 6, 7 -> update to 5
+        str_minutes = f'{regex.group(3)}5'
+    else:
+        # 0, 1, 2, 3 -> update to 0
+        str_minutes = f'{regex.group(3)}0'
+
+    return f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}'
 
 def parse_list(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -112,21 +129,29 @@ ANNOYING_CHARS = (
 )
 
 if __name__ == '__main__':
-    import sys
+    # import sys
     # from argparse import ArgumentParser
 
-    def args_parser():
-        specify_date = '220228'
-        if specify_date:
-            if len(specify_date) == 6:
-                return specify_date
-            else:
-                sys.exit(1)
-        else:
-            return specify_date
+    # def args_parser():
+    #     specify_date = '220228'
+    #     if specify_date:
+    #         if len(specify_date) == 6:
+    #             return specify_date
+    #         else:
+    #             sys.exit(1)
+    #     else:
+    #         return specify_date
     
-    input_date = args_parser()
+    # input_date = args_parser()
+    # specify_date, start_date, end_date = get_live_date(input_date)
+    # specify_date, start_date, end_date = get_archive_date(input_date, input_days=3)
 
-    specify_date, start_date, end_date = get_live_date(input_date)
-
-    specify_date, start_date, end_date = get_archive_date(input_date, input_days=3)
+    test_list = [
+        '2022-03-09T11:00:02.000Z',
+        '2022-02-25T11:27:14.000Z',
+        '2022-02-18T11:18:44.000Z',
+        '2022-02-18T10:55:03.000Z',
+        '2022-02-08T11:58:03.000Z'
+    ]
+    for test_str in test_list:
+        floor_minutes(test_str)

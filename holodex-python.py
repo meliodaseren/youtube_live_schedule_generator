@@ -227,6 +227,7 @@ if __name__ == "__main__":
         # 'list/liver.Music.list',
         'list/liver.VSPO.list',
         'list/liver.FPS.list',
+
     ]
     for _ in liver_lists:
         liver_list = parse_list(_)
