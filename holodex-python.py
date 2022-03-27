@@ -24,6 +24,8 @@ from utils import (
     remove_annoying_unicode,
 )
 
+SLEEP_TIME = 0.7
+
 console = Console()
 result = defaultdict(dict)
 
@@ -83,7 +85,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                         'status': 'Live/Upcoming'
                     }
                     result[start_scheduled].append(video_info)
-                sleep(0.5)
+                sleep(SLEEP_TIME)
 
                 # NOTE: Archive Videos (アーカイブ)
                 # HACK: Limit archive videos: 5
@@ -108,7 +110,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                             'status': 'Archive'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.5)
+                sleep(SLEEP_TIME)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (IndexError {e})")
                 continue
@@ -118,6 +120,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
             except client_exceptions.ContentTypeError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
                 continue
+        sleep(SLEEP_TIME)
 
 async def get_collabs_stream(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
@@ -154,7 +157,7 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
                             'status': 'Collabs'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(0.5)
+                sleep(SLEEP_TIME)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (IndexError {e})")
                 continue
@@ -164,6 +167,7 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
             except client_exceptions.ContentTypeError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
                 continue
+        sleep(SLEEP_TIME)
 
 def print_schedule(result_dict):
     prev_date = ""
@@ -233,5 +237,4 @@ if __name__ == "__main__":
         liver_list = parse_list(_)
         asyncio.run(get_live_stream(liver_list, start_date, end_date))
         asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
-        sleep(1)
     print_schedule(result)
