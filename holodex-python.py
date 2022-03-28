@@ -24,7 +24,8 @@ from utils import (
     remove_annoying_unicode,
 )
 
-SLEEP_TIME = 0.7
+SLEEP_TIME = 0.5
+RERUN_TIME = 1
 
 console = Console()
 result = defaultdict(dict)
@@ -52,6 +53,7 @@ def args_parser():
 
 async def get_live_stream(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
+        error_list = []
         for liver in liver_list:
             print(f'get live: {liver}')
             try:
@@ -85,7 +87,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                         'status': 'Live/Upcoming'
                     }
                     result[start_scheduled].append(video_info)
-                sleep(SLEEP_TIME)
+                await asyncio.sleep(SLEEP_TIME)
 
                 # NOTE: Archive Videos (アーカイブ)
                 # HACK: Limit archive videos: 5
@@ -110,20 +112,25 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                             'status': 'Archive'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(SLEEP_TIME)
+                await asyncio.sleep(SLEEP_TIME)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (IndexError {e})")
+                error_list.append(liver)
                 continue
             except KeyError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (KeyError {e})")
+                error_list.append(liver)
                 continue
             except client_exceptions.ContentTypeError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
+                error_list.append(liver)
                 continue
-        sleep(SLEEP_TIME)
+        await asyncio.sleep(SLEEP_TIME)
+        return error_list
 
 async def get_collabs_stream(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
+        error_list = []
         for liver in liver_list:
             print(f'get collabs: {liver}')
             try:
@@ -157,17 +164,21 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
                             'status': 'Collabs'
                         }
                         result[start_scheduled].append(video_info)
-                sleep(SLEEP_TIME)
+                await asyncio.sleep(SLEEP_TIME)
             except IndexError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (IndexError {e})")
+                error_list.append(liver)
                 continue
             except KeyError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (KeyError {e})")
+                error_list.append(liver)
                 continue
             except client_exceptions.ContentTypeError as e:
                 console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
+                error_list.append(liver)
                 continue
-        sleep(SLEEP_TIME)
+        await asyncio.sleep(SLEEP_TIME)
+        return error_list
 
 def print_schedule(result_dict):
     prev_date = ""
@@ -235,6 +246,18 @@ if __name__ == "__main__":
     ]
     for _ in liver_lists:
         liver_list = parse_list(_)
-        asyncio.run(get_live_stream(liver_list, start_date, end_date))
-        asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
+        error_list = asyncio.run(get_live_stream(liver_list, start_date, end_date))
+        i = 0
+        while (len(error_list) > 0) and (i <= RERUN_TIME):
+            i += 1
+            print(f'rerun list: {error_list}')
+            error_list = asyncio.run(get_live_stream(error_list, start_date, end_date))
+    for _ in liver_lists:
+        liver_list = parse_list(_)
+        error_list = asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
+        i = 0
+        while (len(error_list) > 0) and (i <= RERUN_TIME):
+            print(f'rerun list: {error_list}')
+            error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
+            break
     print_schedule(result)
