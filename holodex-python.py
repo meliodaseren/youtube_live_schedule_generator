@@ -8,7 +8,6 @@ Python wrapper
 """
 import sys, asyncio
 from holodex.client import HolodexClient
-from time import sleep
 from sys import platform
 from rich.console import Console
 from argparse import ArgumentParser
