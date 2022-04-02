@@ -16,7 +16,7 @@ def utc_to_loacl(time_str):
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     if hour_carry:
         schedule_time = schedule_time + timedelta(hours=1)
-        print(f"carry hour to {schedule_time}")
+        console.print(f"carry hour to {schedule_time}")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
 def get_live_date(specify, input_days=1):
@@ -65,6 +65,7 @@ def floor_minutes(time_str) -> Tuple[str, bool]:
         str_minutes = f'{int(regex.group(3))+1}0'
         if str_minutes == '60':
             str_minutes = '00'
+            console.print(f"[bold yellow][DEBUG][/bold yellow] {time_str} ", end='')
             return (
                 f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
                 True
@@ -89,13 +90,13 @@ def parse_list(filepath):
 def check_channel_in_list(channel_name: str, liver_list: list):
     for liver in liver_list:
         if liver in channel_name:
-            # console.print(f"[bold yellow][WARN][/bold yellow] \"{channel_name}\" in liver list")
+            # console.print(f"[bold yellow][WARN ][/bold yellow] \"{channel_name}\" in liver list")
             return True
 
 def check_url_exist(name: str, url: str, video_dict: dict):
     # TODO: check the same url with live/upcoming videos
     if url in [v['url'] for t in video_dict for v in video_dict[t]]:
-        # console.print(f"[bold yellow][WARN][/bold yellow] skip duplicate videos: {url} ({name})")
+        # console.print(f"[bold yellow][WARN ][/bold yellow] skip duplicate videos: {url} ({name})")
         return True
 
 def remove_annoying_unicode(input_str):

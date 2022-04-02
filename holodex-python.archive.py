@@ -111,13 +111,13 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                         result[start_scheduled].append(video_info)
                 sleep(1)
             except IndexError as e:
-                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (IndexError {e})")
+                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (IndexError {e})")
                 continue
             except KeyError as e:
-                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (KeyError {e})")
+                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (KeyError {e})")
                 continue
             except client_exceptions.ContentTypeError as e:
-                console.print(f"[bold red][FAIL][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
+                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
                 continue
 
 def print_schedule(result_dict):
