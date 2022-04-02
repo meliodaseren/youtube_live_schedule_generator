@@ -1,5 +1,6 @@
 import re
 from rich.console import Console
+from typing import Tuple
 from datetime import (
     datetime,
     timezone,
@@ -11,8 +12,11 @@ console = Console()
 
 def utc_to_loacl(time_str):
     tw = timezone(timedelta(hours=+8))
-    time_str = floor_minutes(time_str)
+    time_str, hour_carry = floor_minutes(time_str)
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+    if hour_carry:
+        schedule_time = schedule_time + timedelta(hours=1)
+        print(f"carry hour to {schedule_time}")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
 def get_live_date(specify, input_days=1):
@@ -49,7 +53,7 @@ def get_archive_date(specify, input_days=7):
     print(f"Videos from {prev_day} to {first_day}\n")
     return specify, prev_day, first_day
 
-def floor_minutes(time_str):
+def floor_minutes(time_str) -> Tuple[str, bool]:
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2})T(\d{2}):(\d)(\d):(\d{2}).(\d{3}Z)")
     regex = re.match(pattern, time_str)
     str_date = regex.group(1)
@@ -60,8 +64,11 @@ def floor_minutes(time_str):
     if int(regex.group(4)) >= 8:
         str_minutes = f'{int(regex.group(3))+1}0'
         if str_minutes == '60':
-            str_hours = int(str_hours) + 1
             str_minutes = '00'
+            return (
+                f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
+                True
+            )
     elif int(regex.group(4)) >= 4:
         # 4, 5, 6, 7 -> update to 5
         str_minutes = f'{regex.group(3)}5'
@@ -69,7 +76,10 @@ def floor_minutes(time_str):
         # 0, 1, 2, 3 -> update to 0
         str_minutes = f'{regex.group(3)}0'
 
-    return f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}'
+    return (
+        f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
+        False
+    )
 
 def parse_list(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
