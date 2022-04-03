@@ -61,7 +61,17 @@ def floor_minutes(time_str) -> Tuple[str, bool]:
     str_minutes = f'{regex.group(3)}{regex.group(4)}'
     str_seconds = regex.group(5)
     str_zone = regex.group(6)
-    if int(regex.group(4)) >= 8:
+    if int(regex.group(3)) == 0:
+        # 01 ~ 09 -> floor to 00
+        str_mintues = '00'
+    elif int(regex.group(4)) < 4:
+        # ?0, ?1, ?2, ?3 -> floor to 0
+        str_minutes = f'{regex.group(3)}0'
+    elif int(regex.group(4)) >= 4:
+        # ?4, ?5, ?6, ?7 -> floor to 5
+        str_minutes = f'{regex.group(3)}5'
+    elif int(regex.group(4)) >= 8:
+        # ?8, ?9 -> carry to ?0
         str_minutes = f'{int(regex.group(3))+1}0'
         if str_minutes == '60':
             str_minutes = '00'
@@ -70,12 +80,6 @@ def floor_minutes(time_str) -> Tuple[str, bool]:
                 f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
                 True
             )
-    elif int(regex.group(4)) >= 4:
-        # 4, 5, 6, 7 -> update to 5
-        str_minutes = f'{regex.group(3)}5'
-    else:
-        # 0, 1, 2, 3 -> update to 0
-        str_minutes = f'{regex.group(3)}0'
 
     return (
         f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',

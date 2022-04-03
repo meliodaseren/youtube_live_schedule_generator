@@ -217,7 +217,7 @@ def print_schedule(result_dict):
                 print(f"{video['url']}\n")
                 f.write(f"{video['url']}\n\n")
                 count += 1
-    print(f'Total {count} videos')
+    print(f'今日共計 {count} 枠。')
 
 def test_floor_minutes_string():
     print(floor_minutes('2023-04-02T03:05:00.000Z'))
