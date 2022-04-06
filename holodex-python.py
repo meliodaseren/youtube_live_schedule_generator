@@ -182,7 +182,7 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
 def print_schedule(result_dict):
     prev_date = ""
     prev_time = ""
-    count = 0
+    count = {}
     with open('test.output', 'w', encoding='utf8') as f:
         for start_scheduled in sorted(result_dict):
             # NOTE: date
@@ -190,6 +190,8 @@ def print_schedule(result_dict):
                 console.print(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}")
                 f.write(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}\n")
                 prev_date = start_scheduled.strftime('%Y/%m/%d')
+                count[prev_date] = 0
+
             for video in result_dict[start_scheduled]:
                 # NOTE: video time (available at)
                 if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
@@ -216,8 +218,10 @@ def print_schedule(result_dict):
                 # NOTE: video url
                 print(f"{video['url']}\n")
                 f.write(f"{video['url']}\n\n")
-                count += 1
-    print(f'今日共計 {count} 枠。')
+
+                count[prev_date] += 1
+    for date in count:
+        console.print(f"{date} 共計 {count[date]} 枠。")
 
 def test_floor_minutes_string():
     print(floor_minutes('2023-04-02T03:05:00.000Z'))
