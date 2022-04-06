@@ -25,6 +25,7 @@ from utils import (
 
 SLEEP_TIME = 0.5
 RERUN_TIME = 1
+LIMIT_ARCHIVE_VIDEOS = 10
 
 console = Console()
 result = defaultdict(dict)
@@ -54,13 +55,12 @@ async def get_live_stream(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
         error_list = []
         for liver in liver_list:
-            print(f'get live: {liver}')
             try:
                 search = await client.autocomplete(liver)
                 channel_id = search.contents[0].value
                 channel = await client.channel(channel_id)
                 name = channel.name
-                # print(f'{channel.subscriber_count}')
+                print(f'get live: {liver}, {channel.subscriber_count} subscriber')
 
                 # NOTE: Live/Upcoming Videos (ライブ配信)
                 today_schedule = {
@@ -89,13 +89,13 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                 await asyncio.sleep(SLEEP_TIME)
 
                 # NOTE: Archive Videos (アーカイブ)
-                # HACK: Limit archive videos: 5
-                videos = await client.videos_from_channel(channel_id, "videos", limit=5)
+                videos = await client.videos_from_channel(
+                    channel_id, "videos", limit=LIMIT_ARCHIVE_VIDEOS
+                )
                 for idx in range(len(videos.contents)):
                     start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
 
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:
-                        # print(f'[PASS] {astart_scheduled} > {start_date}')
                         title = videos.contents[idx].title
                         url = f"https://youtu.be/{videos.contents[idx].id}"
 
@@ -131,21 +131,21 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
         error_list = []
         for liver in liver_list:
-            print(f'get collabs: {liver}')
             try:
                 search = await client.autocomplete(liver)
                 channel_id = search.contents[0].value
                 channel = await client.channel(channel_id)
                 name = channel.name
-                # print(f'{channel.subscriber_count}')
+                print(f'get collabs: {liver}, {channel.subscriber_count} subscriber')
+
                 # NOTE: Collabs Videos (コラボ)
-                # HACK: Limit archive videos: 3
-                videos = await client.videos_from_channel(channel_id, "collabs", limit=3)
+                videos = await client.videos_from_channel(
+                    channel_id, "collabs", limit=LIMIT_ARCHIVE_VIDEOS
+                )
                 for idx in range(len(videos.contents)):
                     start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
 
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:
-                        # print(f'[PASS] {astart_scheduled} > {start_date}')
                         title = videos.contents[idx].title
                         collabs_channel = videos.contents[idx].channel.name
                         url = f"https://youtu.be/{videos.contents[idx].id}"
@@ -206,8 +206,6 @@ def print_schedule(result_dict):
                     else:
                         print(f"{video['collabs_channel']} (合作)")
                         f.write(f"{video['collabs_channel']} (合作)\n")
-                        # print(f"{video['collabs_channel']}")
-                        # f.write(f"{video['collabs_channel']}\n")
                 else:
                     print(f"{video['name']}")
                     f.write(f"{video['name']}")
