@@ -16,6 +16,7 @@ from aiohttp import client_exceptions
 from utils import (
     utc_to_loacl,
     get_live_date,
+    get_archive_date,
     floor_minutes,
     parse_list,
     check_url_exist,
@@ -183,6 +184,7 @@ def print_schedule(result_dict):
     prev_date = ""
     prev_time = ""
     count = {}
+    total_count = 0
     with open('test.output', 'w', encoding='utf8') as f:
         for start_scheduled in sorted(result_dict):
             # NOTE: date
@@ -218,8 +220,10 @@ def print_schedule(result_dict):
                 f.write(f"{video['url']}\n\n")
 
                 count[prev_date] += 1
+                total_count += 1
     for date in count:
         console.print(f"{date} 共計 {count[date]} 枠。")
+    console.print(f"           共計 {total_count} 枠。")
 
 def test_floor_minutes_string():
     print(floor_minutes('2023-04-02T03:05:00.000Z'))
@@ -231,7 +235,9 @@ def test_floor_minutes_string():
 
 if __name__ == "__main__":
     specify_date = args_parser()
-    specify_date, start_date, end_date = get_live_date(specify_date)
+
+    # NOTE: get liver videso
+    specify_date, start_date, end_date = get_live_date(specify_date)    
     liver_lists = [
         # 'list/liver.NIJISANJI_JP_2018.list',
         # 'list/liver.NIJISANJI_JP_SEEDs.list',
@@ -240,11 +246,16 @@ if __name__ == "__main__":
         # 'list/liver.NIJISANJI_KR.list',
         # 'list/liver.NIJISANJI_ID.list',
         # 'list/liver.NIJISANJI_EN.list',
-        # 'list/liver.Music.list',
         'list/liver.VSPO.list',
         'list/liver.FPS.list',
-
     ]
+    # NOTE: get archive videos
+    # specify_date, start_date, end_date = get_archive_date(specify_date, input_days=14)
+    # liver_lists = [
+    #     'list/liver.RIOT_Music.list',
+    #     'list/liver.Kamitsubaki.list',
+    # ]
+
     for _ in liver_lists:
         liver_list = parse_list(_)
         error_list = asyncio.run(get_live_stream(liver_list, start_date, end_date))

@@ -4,13 +4,13 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run holodex-python.py",
+            "label": "Run holodex_python.py",
             "type": "shell",
             // "command": "${config:python.pythonPath}",
             "command": "python",
             "args": [
                 // Ask msbuild to generate full paths for file names.
-                "holodex-python.py"
+                "holodex_python.py"
                 // "${file}"
             ],
             "group": {

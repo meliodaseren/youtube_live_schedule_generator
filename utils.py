@@ -49,6 +49,7 @@ def get_archive_date(specify, input_days=7):
         first_day = datetime.combine(date.today(), datetime.min.time())
         print(f"Today's Schedule {first_day}")
 
+    first_day = first_day + timedelta(days=1)
     prev_day = first_day - timedelta(days=input_days)
     print(f"Videos from {prev_day} to {first_day}\n")
     return specify, prev_day, first_day
