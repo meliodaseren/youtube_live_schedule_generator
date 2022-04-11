@@ -252,7 +252,7 @@ if __name__ == "__main__":
     # NOTE: get archive videos
     # specify_date, start_date, end_date = get_archive_date(specify_date, input_days=14)
     # liver_lists = [
-    #     'list/liver.RIOT_Music.list',
+    #     # 'list/liver.RIOT_Music.list',
     #     'list/liver.Kamitsubaki.list',
     # ]
 
