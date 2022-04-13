@@ -223,7 +223,7 @@ def print_schedule(result_dict):
                 total_count += 1
         for date in count:
             console.print(f"{date} 共計 {count[date]} 枠。")
-            f.write(f"{date} 共計 {count[date]} 枠。")
+            f.write(f"{date} 共計 {count[date]} 枠。\n")
         console.print(f"           共計 {total_count} 枠。")
         f.write(f"           共計 {total_count} 枠。")
 
