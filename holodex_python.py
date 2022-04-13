@@ -223,7 +223,9 @@ def print_schedule(result_dict):
                 total_count += 1
     for date in count:
         console.print(f"{date} 共計 {count[date]} 枠。")
+        f.write(f"{date} 共計 {count[date]} 枠。")
     console.print(f"           共計 {total_count} 枠。")
+    f.write(f"           共計 {total_count} 枠。")
 
 def test_floor_minutes_string():
     print(floor_minutes('2023-04-02T03:05:00.000Z'))
