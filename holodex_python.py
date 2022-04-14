@@ -14,10 +14,9 @@ from argparse import ArgumentParser
 from collections import defaultdict
 from aiohttp import client_exceptions
 from utils import (
-    utc_to_loacl,
+    time_formatter,
     get_live_date,
     get_archive_date,
-    floor_minutes,
     parse_list,
     check_url_exist,
     check_channel_in_list,
@@ -29,7 +28,7 @@ RERUN_TIME = 1
 LIMIT_ARCHIVE_VIDEOS = 10
 
 console = Console()
-result = defaultdict(dict)
+SCHEDULE = defaultdict(dict)
 
 # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
 if platform == "linux" or platform == "linux2":
@@ -70,23 +69,23 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                 }
                 live = await client.get_live_streams(today_schedule)
                 for stream in live:
-                    # start_scheduled = utc_to_loacl(stream['start_scheduled'])
-                    start_scheduled = utc_to_loacl(stream['available_at'])
+                    # start_scheduled = time_formatter(stream['start_scheduled'])
+                    start_scheduled = time_formatter(stream['available_at'])
                     title = stream['title']
                     url = f"https://youtu.be/{stream['id']}"
 
-                    if check_url_exist(liver, url, result):
+                    if check_url_exist(liver, url, SCHEDULE):
                         continue
 
-                    if not result[start_scheduled]:
-                        result[start_scheduled] = []
+                    if not SCHEDULE[start_scheduled]:
+                        SCHEDULE[start_scheduled] = []
                     video_info = {
                         'name': name,
                         'title': title,
                         'url': url,
                         'status': 'Live/Upcoming'
                     }
-                    result[start_scheduled].append(video_info)
+                    SCHEDULE[start_scheduled].append(video_info)
                 await asyncio.sleep(SLEEP_TIME)
 
                 # NOTE: Archive Videos (アーカイブ)
@@ -94,24 +93,24 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                     channel_id, "videos", limit=LIMIT_ARCHIVE_VIDEOS
                 )
                 for idx in range(len(videos.contents)):
-                    start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
+                    start_scheduled = time_formatter(videos.contents[idx].available_at)
 
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:
                         title = videos.contents[idx].title
                         url = f"https://youtu.be/{videos.contents[idx].id}"
 
-                        if check_url_exist(liver, url, result):
+                        if check_url_exist(liver, url, SCHEDULE):
                             continue
 
-                        if not result[start_scheduled]:
-                            result[start_scheduled] = []
+                        if not SCHEDULE[start_scheduled]:
+                            SCHEDULE[start_scheduled] = []
                         video_info = {
                             'name': name,
                             'title': title,
                             'url': url,
                             'status': 'Archive'
                         }
-                        result[start_scheduled].append(video_info)
+                        SCHEDULE[start_scheduled].append(video_info)
                 await asyncio.sleep(SLEEP_TIME)
             except IndexError as e:
                 console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (IndexError {e})")
@@ -144,18 +143,18 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
                     channel_id, "collabs", limit=LIMIT_ARCHIVE_VIDEOS
                 )
                 for idx in range(len(videos.contents)):
-                    start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
+                    start_scheduled = time_formatter(videos.contents[idx].available_at)
 
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:
                         title = videos.contents[idx].title
                         collabs_channel = videos.contents[idx].channel.name
                         url = f"https://youtu.be/{videos.contents[idx].id}"
 
-                        if check_url_exist(liver, url, result):
+                        if check_url_exist(liver, url, SCHEDULE):
                             continue
 
-                        if not result[start_scheduled]:
-                            result[start_scheduled] = []
+                        if not SCHEDULE[start_scheduled]:
+                            SCHEDULE[start_scheduled] = []
                         video_info = {
                             'name': name,
                             'collabs_channel': collabs_channel,
@@ -163,7 +162,7 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
                             'url': url,
                             'status': 'Collabs'
                         }
-                        result[start_scheduled].append(video_info)
+                        SCHEDULE[start_scheduled].append(video_info)
                 await asyncio.sleep(SLEEP_TIME)
             except IndexError as e:
                 console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (IndexError {e})")
@@ -180,13 +179,13 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
         await asyncio.sleep(SLEEP_TIME)
         return error_list
 
-def print_schedule(result_dict):
+def print_schedule():
     prev_date = ""
     prev_time = ""
     count = {}
     total_count = 0
     with open('test.output', 'w', encoding='utf8') as f:
-        for start_scheduled in sorted(result_dict):
+        for start_scheduled in sorted(SCHEDULE):
             # NOTE: date
             if prev_date != start_scheduled.strftime('%Y/%m/%d'):
                 console.print(f"{start_scheduled.strftime('--- %Y/%m/%d ---')}")
@@ -194,7 +193,7 @@ def print_schedule(result_dict):
                 prev_date = start_scheduled.strftime('%Y/%m/%d')
                 count[prev_date] = 0
 
-            for video in result_dict[start_scheduled]:
+            for video in SCHEDULE[start_scheduled]:
                 # NOTE: video time (available at)
                 if prev_time != start_scheduled.strftime('%H:%M (%Y/%m/%d)'):
                     print(start_scheduled.strftime('%H:%M'))
@@ -210,7 +209,7 @@ def print_schedule(result_dict):
                         f.write(f"{video['collabs_channel']} (合作)\n")
                 else:
                     print(f"{video['name']}")
-                    f.write(f"{video['name']}")
+                    f.write(f"{video['name']}\n")
                 # NOTE: video title
                 title_format = remove_annoying_unicode(video['title'])
                 print(f"{title_format}")
@@ -226,14 +225,6 @@ def print_schedule(result_dict):
             f.write(f"{date} 共計 {count[date]} 枠。\n")
         console.print(f"           共計 {total_count} 枠。")
         f.write(f"           共計 {total_count} 枠。")
-
-def test_floor_minutes_string():
-    print(floor_minutes('2023-04-02T03:05:00.000Z'))
-    print(floor_minutes('2023-04-02T12:00:00.000Z'))
-    print(floor_minutes('2023-04-02T09:31:00.000Z'))
-    print(floor_minutes('2023-04-02T04:27:00.000Z'))
-    print(floor_minutes('2023-04-02T23:59:00.000Z'))
-    sys.exit()
 
 if __name__ == "__main__":
     specify_date = args_parser()
@@ -255,7 +246,7 @@ if __name__ == "__main__":
     # specify_date, start_date, end_date = get_archive_date(specify_date, input_days=14)
     # liver_lists = [
     #     # 'list/liver.RIOT_Music.list',
-    #     'list/liver.Kamitsubaki.list',
+        # 'list/liver.Kamitsubaki.list',
     # ]
 
     for _ in liver_lists:
@@ -274,4 +265,5 @@ if __name__ == "__main__":
             print(f'rerun list: {error_list}')
             error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
             break
-    print_schedule(result)
+    
+    print_schedule()

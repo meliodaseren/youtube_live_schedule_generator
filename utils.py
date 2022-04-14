@@ -10,9 +10,13 @@ from datetime import (
 
 console = Console()
 
-def utc_to_loacl(time_str):
+def time_formatter(time_str):
+    time_str = utc_to_local(time_str)
+    return time_str
+
+def utc_to_local(time_str):
     tw = timezone(timedelta(hours=+8))
-    time_str, hour_carry = floor_minutes(time_str)
+    time_str, hour_carry = round_off_time(time_str)
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     if hour_carry:
         schedule_time = schedule_time + timedelta(hours=1)
@@ -54,34 +58,31 @@ def get_archive_date(specify, input_days=7):
     print(f"Videos from {prev_day} to {first_day}\n")
     return specify, prev_day, first_day
 
-def floor_minutes(time_str) -> Tuple[str, bool]:
+def round_off_time(time_str) -> Tuple[str, bool]:
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2})T(\d{2}):(\d)(\d):(\d{2}).(\d{3}Z)")
     regex = re.match(pattern, time_str)
     str_date = regex.group(1)
     str_hours = regex.group(2)
     str_minutes = f'{regex.group(3)}{regex.group(4)}'
-    str_seconds = regex.group(5)
+    # str_seconds = regex.group(5)
+    str_seconds = '00'
     str_zone = regex.group(6)
     if regex.group(3) == '0':
         # 01 ~ 09 -> floor to 00
         str_minutes = '00'
-    elif int(regex.group(4)) < 4:
+    elif regex.group(4) in ('0', '1', '2', '3', '4'):
         # ?0, ?1, ?2, ?3 -> floor to 0
         str_minutes = f'{regex.group(3)}0'
-    elif int(regex.group(4)) >= 4:
-        # ?4, ?5, ?6, ?7 -> floor to 5
-        str_minutes = f'{regex.group(3)}5'
-    elif int(regex.group(4)) >= 8:
+    elif regex.group(4) in ('5', '6', '7', '8', '9'):
         # ?8, ?9 -> carry to ?0
         str_minutes = f'{int(regex.group(3))+1}0'
         if str_minutes == '60':
             str_minutes = '00'
-            console.print(f"[bold yellow][DEBUG][/bold yellow] {time_str} ", end='')
+            console.print(f"[bold orange][DEBUG][/bold orange] {time_str} ", end='')
             return (
                 f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
                 True
             )
-
     return (
         f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
         False
@@ -163,11 +164,12 @@ if __name__ == '__main__':
     # specify_date, start_date, end_date = get_archive_date(input_date, input_days=3)
 
     test_list = [
-        '2022-03-09T11:00:02.000Z',
-        '2022-02-25T11:27:14.000Z',
-        '2022-02-18T11:18:44.000Z',
-        '2022-02-18T10:55:03.000Z',
+        '2022-03-09T11:09:02.000Z',
+        '2022-02-25T11:22:14.000Z',
+        '2022-02-18T11:34:44.000Z',
+        '2022-02-18T10:45:03.000Z',
         '2022-02-08T11:58:03.000Z'
     ]
     for test_str in test_list:
-        floor_minutes(test_str)
+        print(test_str)
+        print(round_off_time(test_str))

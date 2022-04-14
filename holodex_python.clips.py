@@ -16,7 +16,7 @@ from argparse import ArgumentParser
 from collections import defaultdict
 from aiohttp import client_exceptions
 from utils import (
-    utc_to_loacl,
+    time_formatter,
     check_url_exist,
     parse_list,
     get_archive_date,
@@ -30,7 +30,7 @@ RERUN_TIME = 1
 LIMIT_ARCHIVE_VIDEOS = 30
 
 console = Console()
-result = defaultdict(dict)
+SCHEDULE = defaultdict(dict)
 
 # Policy for windows: https://docs.python.org/3/library/asyncio-policy.html
 if platform == "linux" or platform == "linux2":
@@ -58,7 +58,7 @@ async def main(liver_list: list, start_date, end_date):
                     limit=LIMIT_ARCHIVE_VIDEOS
                 )
                 for idx in range(len(videos.contents)):
-                    start_scheduled = utc_to_loacl(videos.contents[idx].available_at)
+                    start_scheduled = time_formatter(videos.contents[idx].available_at)
                     # print(f'       {liver} {idx} {astart_scheduled} vs {first_date}')
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:
                         # print(f'[PASS] {astart_scheduled} > {first_date}')
@@ -66,12 +66,12 @@ async def main(liver_list: list, start_date, end_date):
                         clips_channel = videos.contents[idx].channel.name
                         url = f"https://youtu.be/{videos.contents[idx].id}"
 
-                        if check_url_exist(liver, url, result):
+                        if check_url_exist(liver, url, SCHEDULE):
                             continue
 
                         # Create dictionary
-                        if not result[start_scheduled]:
-                            result[start_scheduled] = []
+                        if not SCHEDULE[start_scheduled]:
+                            SCHEDULE[start_scheduled] = []
                         video_info = {
                             'name': name,
                             'clips_channel': clips_channel,
@@ -79,7 +79,7 @@ async def main(liver_list: list, start_date, end_date):
                             'url': url,
                             'status': 'Clips'
                         }
-                        result[start_scheduled].append(video_info)
+                        SCHEDULE[start_scheduled].append(video_info)
                 await asyncio.sleep(SLEEP_TIME)
             except IndexError as e:
                 console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (IndexError {e})")
@@ -98,12 +98,12 @@ async def main(liver_list: list, start_date, end_date):
 
 def print_videos_information():
     prev_date = ""
-    for start_scheduled in sorted(result):
+    for start_scheduled in sorted(SCHEDULE):
         # NOTE: print date
         if prev_date != start_scheduled.strftime('%Y/%m/%d'):
             print(start_scheduled.strftime('--- %Y/%m/%d ---'))
             prev_date = start_scheduled.strftime('%Y/%m/%d')
-        for video in result[start_scheduled]:
+        for video in SCHEDULE[start_scheduled]:
             # NOTE: print video title
             print(f"{video['title']}")
             # NOTE: print video url
@@ -114,8 +114,8 @@ if __name__ == "__main__":
     specify_date, start_date, end_date = get_archive_date(specify_date)
     liver_lists = [
         # 'list/liver.Music.list',
-        'list/liver.VSPO.list',
-        # 'list/liver.FPS.list',
+        # 'list/liver.VSPO.list',
+        'list/liver.FPS.list',
     ]
     for _ in liver_lists:
         liver_list = parse_list(_)
