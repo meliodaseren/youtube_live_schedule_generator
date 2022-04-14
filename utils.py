@@ -67,16 +67,25 @@ def round_off_time(time_str) -> Tuple[str, bool]:
     # str_seconds = regex.group(5)
     str_seconds = '00'
     str_zone = regex.group(6)
-    if regex.group(3) == '0':
-        # 01 ~ 09 -> floor to 00
+    if (regex.group(3) == '0') or (str_minutes == '10'):
+        # 01 ~ 10 -> floor to 00
         str_minutes = '00'
+    elif str_minutes == '50':
+        # 50 -> carry to next hour
+        str_minutes = '00'
+        console.print(f"[bold orange][DEBUG][/bold orange] {time_str} ", end='')
+        return (
+            f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
+            True
+        )
     elif regex.group(4) in ('0', '1', '2', '3', '4'):
-        # ?0, ?1, ?2, ?3 -> floor to 0
         str_minutes = f'{regex.group(3)}0'
+        if str_minutes == '10':
+            str_minutes = '00'
     elif regex.group(4) in ('5', '6', '7', '8', '9'):
-        # ?8, ?9 -> carry to ?0
         str_minutes = f'{int(regex.group(3))+1}0'
         if str_minutes == '60':
+            # carry to next hour
             str_minutes = '00'
             console.print(f"[bold orange][DEBUG][/bold orange] {time_str} ", end='')
             return (
@@ -164,12 +173,22 @@ if __name__ == '__main__':
     # specify_date, start_date, end_date = get_archive_date(input_date, input_days=3)
 
     test_list = [
+        '2022-03-09T11:02:02.000Z',
         '2022-03-09T11:09:02.000Z',
+        '2022-03-09T11:10:02.000Z',
+
+        '2022-02-25T11:20:14.000Z',
         '2022-02-25T11:22:14.000Z',
+
+        '2022-02-25T11:27:14.000Z',
+        '2022-02-18T11:30:44.000Z',
         '2022-02-18T11:34:44.000Z',
-        '2022-02-18T10:45:03.000Z',
+
+        '2022-02-18T11:45:03.000Z',
+        '2022-02-18T11:48:03.000Z',
+
+        '2022-02-08T11:50:03.000Z',
         '2022-02-08T11:58:03.000Z'
     ]
     for test_str in test_list:
-        print(test_str)
-        print(round_off_time(test_str))
+        print(f'{test_str} -> {time_formatter(test_str)}')
