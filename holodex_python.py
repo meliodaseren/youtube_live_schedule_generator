@@ -241,6 +241,7 @@ if __name__ == "__main__":
         # 'list/liver.NIJISANJI_EN.list',
         'list/liver.VSPO.list',
         'list/liver.FPS.list',
+        'list/liver.NeoPorte.list',
     ]
     # NOTE: get archive videos
     # specify_date, start_date, end_date = get_archive_date(specify_date, input_days=14)
