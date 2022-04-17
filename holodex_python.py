@@ -26,6 +26,24 @@ from utils import (
 SLEEP_TIME = 0.5
 RERUN_TIME = 1
 LIMIT_ARCHIVE_VIDEOS = 10
+ARCHIVE_DAYS = 14
+
+LIVER_LISTS = [
+    # 'list/liver.NIJISANJI_JP_2018.list',
+    # 'list/liver.NIJISANJI_JP_SEEDs.list',
+    # 'list/liver.NIJISANJI_JP_2019.list',
+    # 'list/liver.NIJISANJI_JP_2020.list',
+    # 'list/liver.NIJISANJI_KR.list',
+    # 'list/liver.NIJISANJI_ID.list',
+    # 'list/liver.NIJISANJI_EN.list',
+
+    'list/liver.VSPO.list',
+    'list/liver.FPS.list',
+    'list/liver.NeoPorte.list',
+
+    # 'list/liver.RIOT_Music.list',
+    # 'list/liver.Kamitsubaki.list',
+]
 
 console = Console()
 SCHEDULE = defaultdict(dict)
@@ -40,8 +58,15 @@ elif platform == "win32": # Windows
 
 def args_parser():
     parser = ArgumentParser()
-    parser.add_argument("specify_date", nargs='?', type=str,
-                        help="Specify date: 211120")
+    parser.add_argument(
+        "specify_date", nargs='?', type=str,
+        help="Specify date: 211120")
+    parser.add_argument(
+        "-c", "--collabs", action="store_true",
+        help="Get collabs videos")
+    parser.add_argument(
+        "-a", "--archive", action="store_true",
+        help="Get more archive videos")
     args = parser.parse_args()
     if args.specify_date:
         if len(args.specify_date) == 6:
@@ -49,7 +74,7 @@ def args_parser():
         else:
             sys.exit(1)
     else:
-        return args.specify_date
+        return args
 
 async def get_live_stream(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
@@ -227,30 +252,20 @@ def print_schedule():
         f.write(f"           共計 {total_count} 枠。")
 
 if __name__ == "__main__":
-    specify_date = args_parser()
+
+    args_opts = args_parser()
 
     # NOTE: get liver videso
-    specify_date, start_date, end_date = get_live_date(specify_date)    
-    liver_lists = [
-        # 'list/liver.NIJISANJI_JP_2018.list',
-        # 'list/liver.NIJISANJI_JP_SEEDs.list',
-        # 'list/liver.NIJISANJI_JP_2019.list',
-        # 'list/liver.NIJISANJI_JP_2020.list',
-        # 'list/liver.NIJISANJI_KR.list',
-        # 'list/liver.NIJISANJI_ID.list',
-        # 'list/liver.NIJISANJI_EN.list',
-        'list/liver.VSPO.list',
-        'list/liver.FPS.list',
-        'list/liver.NeoPorte.list',
-    ]
+    specify_date, start_date, end_date = get_live_date(
+        args_opts.specify_date
+    )
     # NOTE: get archive videos
-    # specify_date, start_date, end_date = get_archive_date(specify_date, input_days=14)
-    # liver_lists = [
-    #     # 'list/liver.RIOT_Music.list',
-        # 'list/liver.Kamitsubaki.list',
-    # ]
+    if args_opts.archive:
+        specify_date, start_date, end_date = get_archive_date(
+            args_opts.specify_date, input_days=ARCHIVE_DAYS
+        )
 
-    for _ in liver_lists:
+    for _ in LIVER_LISTS:
         liver_list = parse_list(_)
         error_list = asyncio.run(get_live_stream(liver_list, start_date, end_date))
         i = 0
@@ -258,13 +273,15 @@ if __name__ == "__main__":
             i += 1
             print(f'rerun list: {error_list}')
             error_list = asyncio.run(get_live_stream(error_list, start_date, end_date))
-    for _ in liver_lists:
-        liver_list = parse_list(_)
-        error_list = asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
-        i = 0
-        while (len(error_list) > 0) and (i <= RERUN_TIME):
-            print(f'rerun list: {error_list}')
-            error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
-            break
-    
+
+    if args_opts.collabs:
+        for _ in LIVER_LISTS:
+            liver_list = parse_list(_)
+            error_list = asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
+            i = 0
+            while (len(error_list) > 0) and (i <= RERUN_TIME):
+                i += 1
+                print(f'rerun list: {error_list}')
+                error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
+
     print_schedule()
