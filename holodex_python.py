@@ -29,6 +29,13 @@ LIMIT_ARCHIVE_VIDEOS = 10
 ARCHIVE_DAYS = 14
 
 LIVER_LISTS = [
+    'list/liver.VSPO.list',
+    'list/liver.FPS.list',
+    'list/liver.NeoPorte.list',
+
+    # 'list/liver.RIOT_Music.list',
+    # 'list/liver.Kamitsubaki.list',
+
     # 'list/liver.NIJISANJI_JP_2018.list',
     # 'list/liver.NIJISANJI_JP_SEEDs.list',
     # 'list/liver.NIJISANJI_JP_2019.list',
@@ -36,13 +43,6 @@ LIVER_LISTS = [
     # 'list/liver.NIJISANJI_KR.list',
     # 'list/liver.NIJISANJI_ID.list',
     # 'list/liver.NIJISANJI_EN.list',
-
-    'list/liver.VSPO.list',
-    'list/liver.FPS.list',
-    'list/liver.NeoPorte.list',
-
-    # 'list/liver.RIOT_Music.list',
-    # 'list/liver.Kamitsubaki.list',
 ]
 
 console = Console()
@@ -274,14 +274,14 @@ if __name__ == "__main__":
             print(f'rerun list: {error_list}')
             error_list = asyncio.run(get_live_stream(error_list, start_date, end_date))
 
-    if args_opts.collabs:
-        for _ in LIVER_LISTS:
-            liver_list = parse_list(_)
-            error_list = asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
-            i = 0
-            while (len(error_list) > 0) and (i <= RERUN_TIME):
-                i += 1
-                print(f'rerun list: {error_list}')
-                error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
+    # if args_opts.collabs:
+    for _ in LIVER_LISTS:
+        liver_list = parse_list(_)
+        error_list = asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
+        i = 0
+        while (len(error_list) > 0) and (i <= RERUN_TIME):
+            i += 1
+            print(f'rerun list: {error_list}')
+            error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
 
     print_schedule()
