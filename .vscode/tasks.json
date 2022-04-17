@@ -10,7 +10,8 @@
             "command": "python",
             "args": [
                 // Ask msbuild to generate full paths for file names.
-                "holodex_python.py"
+                "holodex_python.py",
+                "--collabs"
                 // "${file}"
             ],
             "group": {
