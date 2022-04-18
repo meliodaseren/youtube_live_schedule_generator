@@ -59,7 +59,9 @@ elif platform == "win32": # Windows
 def args_parser():
     parser = ArgumentParser()
     parser.add_argument(
-        "specify_date", nargs='?', type=str,
+        "specify_date",
+        nargs='?',
+        type=str,
         help="Specify date: 211120")
     parser.add_argument(
         "-c", "--collabs", action="store_true",
@@ -69,12 +71,9 @@ def args_parser():
         help="Get more archive videos")
     args = parser.parse_args()
     if args.specify_date:
-        if len(args.specify_date) == 6:
-            return args.specify_date
-        else:
+        if len(args.specify_date) != 6:
             sys.exit(1)
-    else:
-        return args
+    return args
 
 async def get_live_stream(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
