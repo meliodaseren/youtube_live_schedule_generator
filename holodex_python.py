@@ -21,6 +21,7 @@ from utils import (
     check_url_exist,
     check_channel_in_list,
     remove_annoying_unicode,
+    wrap_title,
 )
 
 SLEEP_TIME = 0.5
@@ -236,6 +237,7 @@ def print_schedule():
                     f.write(f"{video['name']}\n")
                 # NOTE: video title
                 title_format = remove_annoying_unicode(video['title'])
+                title_format = wrap_title(title_format)
                 print(f"{title_format}")
                 f.write(f"{title_format}\n")
                 # NOTE: video url
