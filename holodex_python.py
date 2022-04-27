@@ -62,13 +62,16 @@ def args_parser():
         "specify_date",
         nargs='?',
         type=str,
-        help="Specify date: 211120")
+        help="Specify date: 211120"
+    )
     parser.add_argument(
         "-c", "--collabs", action="store_true",
-        help="Get collabs videos")
+        help="Get collabs videos"
+    )
     parser.add_argument(
         "-a", "--archive", action="store_true",
-        help="Get more archive videos")
+        help="Get more archive videos"
+    )
     args = parser.parse_args()
     if args.specify_date:
         if len(args.specify_date) != 6:
