@@ -114,6 +114,17 @@ def check_url_exist(name: str, url: str, video_dict: dict):
         # console.print(f"[bold yellow][WARN ][/bold yellow] skip duplicate videos: {url} ({name})")
         return True
 
+def wrap_title(title: str):
+    # if len(title) > 30:
+    #     pattern = re.search(r'^(.*)【(.*)】(.*)【(.*)】(.*)$', title)
+    #     if pattern:
+    #         title = (
+    #             f'{pattern.group(1).strip()}'
+    #             f'【{pattern.group(2).strip()}】{pattern.group(3).strip()}\n'
+    #             f'【{pattern.group(4).strip()}】{pattern.group(5).strip()}'
+    #         )
+    return title
+
 def remove_annoying_unicode(input_str):
     """
     https://www.utf8-chartable.de/unicode-utf8-table.pl?start=8064&names=-&utf8=string-literal
@@ -139,6 +150,31 @@ ANNOYING_CHARS = (
     ('\u200d', ''),
     ('\u200e', ''),
     ('\u200f', ''),
+    ('\u2028', ''),
+    ('\u2029', ''),
+    ('\u202a', ''),
+    ('\u202b', ''),
+    ('\u202c', ''),
+    ('\u202d', ''),
+    ('\u202e', ''),
+    ('\u202f', ''),
+    ('\u205f', ''),
+    ('\u2060', ''),
+    ('\u2061', ''),
+    ('\u2062', ''),
+    ('\u2063', ''),
+    ('\u2064', ''),
+    ('\u2065', ''),
+    ('\u2066', ''),
+    ('\u2067', ''),
+    ('\u2068', ''),
+    ('\u2069', ''),
+    ('\u206a', ''),
+    ('\u206b', ''),
+    ('\u206c', ''),
+    ('\u206d', ''),
+    ('\u206e', ''),
+    ('\u206f', ''),
     ('\u2010', '-'),
     ('\u2011', '-'),
     ('\u2012', '-'),
