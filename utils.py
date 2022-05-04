@@ -20,7 +20,7 @@ def utc_to_local(time_str):
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     if hour_carry:
         schedule_time = schedule_time + timedelta(hours=1)
-        console.print(f"carry hour to {schedule_time}")
+        # console.print(f"carry hour to {schedule_time}")
     return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
 
 def get_live_date(specify, input_days=1):
@@ -73,7 +73,7 @@ def round_off_time(time_str) -> Tuple[str, bool]:
     elif str_minutes == '50':
         # 50 -> carry to next hour
         str_minutes = '00'
-        console.print(f"[bold orange][DEBUG][/bold orange] {time_str} ", end='')
+        # console.print(f"[bold orange][DEBUG][/bold orange] {time_str} ", end='')
         return (
             f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
             True
@@ -87,7 +87,7 @@ def round_off_time(time_str) -> Tuple[str, bool]:
         if str_minutes == '60':
             # carry to next hour
             str_minutes = '00'
-            console.print(f"[bold orange][DEBUG][/bold orange] {time_str} ", end='')
+            # console.print(f"[bold orange][DEBUG][/bold orange] {time_str} ", end='')
             return (
                 f'{str_date}T{str_hours}:{str_minutes}:{str_seconds}.{str_zone}',
                 True
