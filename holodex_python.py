@@ -6,13 +6,14 @@ Holodex API Documentation
 Python wrapper
     https://github.com/ombe1229/holodex
 """
-import sys, asyncio
+import os, sys, asyncio
 from holodex.client import HolodexClient
 from sys import platform
 from rich.console import Console
 from argparse import ArgumentParser
 from collections import defaultdict
 from aiohttp import client_exceptions
+from datetime import datetime
 from utils import (
     time_formatter,
     get_live_date,
@@ -208,11 +209,13 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
         return error_list
 
 def print_schedule():
-    prev_date = ""
-    prev_time = ""
+    prev_date, prev_time = "", ""
+    total_count, evening_count, night_count = 0, 0, 0
     count = {}
-    total_count = 0
-    with open('test.output', 'w', encoding='utf8') as f:
+    outfile = f"output.{datetime.today().strftime('%Y%m%d')}"
+    if os.path.exists(outfile):
+        console.print(f'{outfile} already exists')
+    with open(outfile, 'w', encoding='utf8') as f:
         for start_scheduled in sorted(SCHEDULE):
             # NOTE: date
             if prev_date != start_scheduled.strftime('%Y/%m/%d'):
@@ -248,12 +251,23 @@ def print_schedule():
                 f.write(f"{video['url']}\n\n")
 
                 count[prev_date] += 1
+                if int(start_scheduled.strftime('%H')) < 18:
+                    evening_count += 1
+                else:
+                    night_count += 1
                 total_count += 1
         for date in count:
             console.print(f"{date} 共計 {count[date]} 枠。")
             f.write(f"{date} 共計 {count[date]} 枠。\n")
-        console.print(f"           共計 {total_count} 枠。")
-        f.write(f"           共計 {total_count} 枠。")
+
+        console.print(
+            f"           共計 {total_count} 枠 "
+            f"({evening_count} 枠 ～18:00 {night_count} 枠)"
+        )
+        f.write(
+            f"           共計 {total_count} 枠 "
+            f"({evening_count} 枠 ～18:00 {night_count} 枠)"
+        )
 
 if __name__ == "__main__":
 
