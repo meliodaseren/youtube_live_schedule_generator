@@ -6,14 +6,17 @@ Holodex API Documentation
 Python wrapper
     https://github.com/ombe1229/holodex
 """
-import os, sys, asyncio
-from holodex.client import HolodexClient
+import os
+import sys
+import asyncio
+from typing import List
 from sys import platform
-from rich.console import Console
-from argparse import ArgumentParser
-from collections import defaultdict
-from aiohttp import client_exceptions
 from datetime import datetime
+from collections import defaultdict
+from argparse import ArgumentParser
+from aiohttp import client_exceptions
+from holodex.client import HolodexClient
+from rich.console import Console
 from utils import (
     time_formatter,
     get_live_date,
@@ -80,7 +83,7 @@ def args_parser():
             sys.exit(1)
     return args
 
-async def get_live_stream(liver_list: list, start_date, end_date):
+async def get_live_stream(liver_list: List, start_date, end_date) -> List:
     async with HolodexClient() as client:
         error_list = []
         for liver in liver_list:
@@ -121,7 +124,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
                 videos = await client.videos_from_channel(
                     channel_id, "videos", limit=LIMIT_ARCHIVE_VIDEOS
                 )
-                for idx in range(len(videos.contents)):
+                for idx, _ in enumerate(videos.contents):
                     start_scheduled = time_formatter(videos.contents[idx].available_at)
 
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:
@@ -156,7 +159,7 @@ async def get_live_stream(liver_list: list, start_date, end_date):
         await asyncio.sleep(SLEEP_TIME)
         return error_list
 
-async def get_collabs_stream(liver_list: list, start_date, end_date):
+async def get_collabs_stream(liver_list: List, start_date, end_date) -> List:
     async with HolodexClient() as client:
         error_list = []
         for liver in liver_list:
@@ -171,7 +174,7 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
                 videos = await client.videos_from_channel(
                     channel_id, "collabs", limit=LIMIT_ARCHIVE_VIDEOS
                 )
-                for idx in range(len(videos.contents)):
+                for idx, _ in enumerate(videos.contents):
                     start_scheduled = time_formatter(videos.contents[idx].available_at)
 
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:
@@ -208,7 +211,7 @@ async def get_collabs_stream(liver_list: list, start_date, end_date):
         await asyncio.sleep(SLEEP_TIME)
         return error_list
 
-def print_schedule():
+def print_schedule() -> None:
     prev_date, prev_time = "", ""
     total_count, evening_count, night_count = 0, 0, 0
     count = {}
@@ -256,9 +259,9 @@ def print_schedule():
                 else:
                     night_count += 1
                 total_count += 1
-        for date in count:
-            console.print(f"{date} 共計 {count[date]} 枠。")
-            f.write(f"{date} 共計 {count[date]} 枠。\n")
+        for date, _ in count.items():
+            console.print(f"{date} 共計 {_} 枠。")
+            f.write(f"{date} 共計 {_} 枠。\n")
 
         console.print(
             f"           共計 {total_count} 枠 "
