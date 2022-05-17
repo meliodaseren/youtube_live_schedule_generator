@@ -212,7 +212,7 @@ def print_schedule():
     prev_date, prev_time = "", ""
     total_count, evening_count, night_count = 0, 0, 0
     count = {}
-    outfile = f"output.{datetime.today().strftime('%Y%m%d')}"
+    outfile = f"test/output.{datetime.today().strftime('%Y%m%d')}"
     if os.path.exists(outfile):
         console.print(f'{outfile} already exists')
     with open(outfile, 'w', encoding='utf8') as f:
