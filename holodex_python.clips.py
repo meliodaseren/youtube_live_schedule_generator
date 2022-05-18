@@ -8,13 +8,11 @@ Python wrapper
     https://github.com/ombe1229/holodex
 """
 import asyncio
-from holodex.client import HolodexClient
-from rich.console import Console
-from time import sleep
 from sys import platform
-from argparse import ArgumentParser
 from collections import defaultdict
 from aiohttp import client_exceptions
+from holodex.client import HolodexClient
+from rich.console import Console
 from utils import (
     time_formatter,
     check_url_exist,
@@ -57,7 +55,7 @@ async def main(liver_list: list, start_date, end_date):
                     "clips",
                     limit=LIMIT_ARCHIVE_VIDEOS
                 )
-                for idx in range(len(videos.contents)):
+                for idx, _ in enumerate(videos.contents):
                     start_scheduled = time_formatter(videos.contents[idx].available_at)
                     # print(f'       {liver} {idx} {astart_scheduled} vs {first_date}')
                     if start_date < start_scheduled.replace(tzinfo=None) < end_date:

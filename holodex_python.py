@@ -28,8 +28,8 @@ from utils import (
     wrap_title,
 )
 
-SLEEP_TIME = 0.5
-RERUN_TIME = 1
+SLEEP_TIME = 0.2
+RERUN_TIME = 0.5
 LIMIT_ARCHIVE_VIDEOS = 10
 ARCHIVE_DAYS = 14
 

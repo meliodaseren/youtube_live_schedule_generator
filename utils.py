@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 import re
-from rich.console import Console
 from typing import Tuple
 from datetime import (
     datetime,
@@ -7,6 +7,7 @@ from datetime import (
     timedelta,
     date
 )
+from rich.console import Console
 
 console = Console()
 
