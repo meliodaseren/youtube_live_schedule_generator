@@ -39,7 +39,7 @@ def get_live_date(specify, input_days=1):
 
     end_date = first_day + timedelta(days=input_days)
     print(f"Schedule from {first_day} to {end_date}\n")
-    return specify, first_day, end_date
+    return first_day, end_date
 
 def get_archive_date(specify, input_days=7):
     if specify:
@@ -57,7 +57,7 @@ def get_archive_date(specify, input_days=7):
     first_day = first_day + timedelta(days=1)
     prev_day = first_day - timedelta(days=input_days)
     print(f"Videos from {prev_day} to {first_day}\n")
-    return specify, prev_day, first_day
+    return prev_day, first_day
 
 def round_off_time(time_str) -> Tuple[str, bool]:
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2})T(\d{2}):(\d)(\d):(\d{2}).(\d{3}Z)")

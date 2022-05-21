@@ -227,7 +227,7 @@ async def get_collabs_stream(liver_list: List, start_date, end_date) -> List:
         await asyncio.sleep(SLEEP_TIME)
         return error_list
 
-def print_schedule() -> None:
+def print_schedule(liver_list: List) -> None:
     prev_date, prev_time = "", ""
     total_count, evening_count, night_count = 0, 0, 0
     count = {}
@@ -290,37 +290,34 @@ def print_schedule() -> None:
 
 def main():
     args_opts = args_parser()
-
-    # NOTE: get liver videso
-    specify_date, start_date, end_date = get_live_date(
+    start_date, end_date = get_live_date(
         args_opts.specify_date
     )
     # NOTE: get archive videos
     if args_opts.archive:
-        specify_date, start_date, end_date = get_archive_date(
+        start_date, end_date = get_archive_date(
             args_opts.specify_date, input_days=ARCHIVE_DAYS
         )
 
+    all_liver_list = []
     for _ in LIVER_LISTS:
-        liver_list = parse_list(_)
-        error_list = asyncio.run(get_live_stream(liver_list, start_date, end_date))
-        i = 0
-        while (len(error_list) > 0) and (i <= RERUN_TIME):
-            i += 1
-            print(f'rerun list: {error_list}')
-            error_list = asyncio.run(get_live_stream(error_list, start_date, end_date))
+        all_liver_list.extend(parse_list(_))
 
-    # if args_opts.collabs:
-    for _ in LIVER_LISTS:
-        liver_list = parse_list(_)
-        error_list = asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
-        i = 0
-        while (len(error_list) > 0) and (i <= RERUN_TIME):
-            i += 1
-            print(f'rerun list: {error_list}')
-            error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
+    errors = asyncio.run(get_live_stream(all_liver_list, start_date, end_date))
+    i = 0
+    while (len(errors) > 0) and (i <= RERUN_TIME):
+        i += 1
+        print(f'rerun list: {errors}')
+        errors = asyncio.run(get_live_stream(errors, start_date, end_date))
 
-    print_schedule()
+    errors = asyncio.run(get_collabs_stream(all_liver_list, start_date, end_date))
+    i = 0
+    while (len(errors) > 0) and (i <= RERUN_TIME):
+        i += 1
+        print(f'rerun list: {errors}')
+        errors = asyncio.run(get_collabs_stream(errors, start_date, end_date))
+
+    print_schedule(all_liver_list)
 
 if __name__ == "__main__":
     main()

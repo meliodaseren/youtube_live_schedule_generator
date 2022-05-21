@@ -26,6 +26,12 @@ SLEEP_TIME = 0.5
 RERUN_TIME = 1
 LIMIT_ARCHIVE_VIDEOS = 30
 
+LIVER_LISTS = [
+    # 'list/liver.Music.list',
+    # 'list/liver.VSPO.list',
+    'list/liver.FPS.list',
+]
+
 console = Console()
 SCHEDULE = defaultdict(dict)
 
@@ -37,7 +43,7 @@ elif platform == "darwin": # macOS
 elif platform == "win32": # Windows
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-async def main(liver_list: list, start_date, end_date):
+async def get_clips(liver_list: list, start_date, end_date):
     async with HolodexClient() as client:
         error_list = []
         for liver in liver_list:
@@ -107,21 +113,21 @@ def print_videos_information():
             print(f"{video['url']}\n")
 
 def main():
-    specify_date = args_parser()
-    specify_date, start_date, end_date = get_archive_date(specify_date)
-    liver_lists = [
-        # 'list/liver.Music.list',
-        # 'list/liver.VSPO.list',
-        'list/liver.FPS.list',
-    ]
-    for _ in liver_lists:
-        liver_list = parse_list(_)
-        error_list = asyncio.run(main(liver_list, start_date, end_date))
-        i = 0
-        while (len(error_list) > 0) and (i <= RERUN_TIME):
-            print(f'rerun list: {error_list}')
-            error_list = asyncio.run(main(error_list, start_date, end_date))
-            break
+    args_opts = args_parser()
+    start_date, end_date = get_archive_date(
+        args_opts.specify_date
+    )
+
+    all_liver_list = []
+    for _ in LIVER_LISTS:
+        all_liver_list.extend(parse_list(_))
+
+    errors = asyncio.run(get_clips(all_liver_list, start_date, end_date))
+    i = 0
+    while (len(errors) > 0) and (i <= RERUN_TIME):
+        print(f'rerun list: {errors}')
+        errors = asyncio.run(get_clips(errors, start_date, end_date))
+        break
     print_videos_information()
 
 if __name__ == "__main__":
