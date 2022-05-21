@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Holodex API Documentation
     https://holodex.stoplight.io/
@@ -107,7 +106,7 @@ def print_videos_information():
             # NOTE: print video url
             print(f"{video['url']}\n")
 
-if __name__ == "__main__":
+def main():
     specify_date = args_parser()
     specify_date, start_date, end_date = get_archive_date(specify_date)
     liver_lists = [
@@ -124,3 +123,6 @@ if __name__ == "__main__":
             error_list = asyncio.run(main(error_list, start_date, end_date))
             break
     print_videos_information()
+
+if __name__ == "__main__":
+    main()

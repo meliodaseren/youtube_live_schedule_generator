@@ -145,15 +145,23 @@ async def get_live_stream(liver_list: List, start_date, end_date) -> List:
                         SCHEDULE[start_scheduled].append(video_info)
                 await asyncio.sleep(SLEEP_TIME)
             except IndexError as e:
-                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (IndexError {e})")
+                console.print(
+                    f'[bold red][FAIL ][/bold red] cannot search videos: '
+                    f'{liver} (IndexError {e})')
                 error_list.append(liver)
                 continue
             except KeyError as e:
-                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (KeyError {e})")
+                console.print(
+                    f'[bold red][FAIL ][/bold red] cannot search videos: '
+                    f'{liver} (KeyError {e})'
+                )
                 error_list.append(liver)
                 continue
             except client_exceptions.ContentTypeError as e:
-                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
+                console.print(
+                    f'[bold red][FAIL ][/bold red] cannot search videos: '
+                    f'{liver} (client_exceptions.ContentTypeError {e})'
+                )
                 error_list.append(liver)
                 continue
         await asyncio.sleep(SLEEP_TIME)
@@ -197,15 +205,23 @@ async def get_collabs_stream(liver_list: List, start_date, end_date) -> List:
                         SCHEDULE[start_scheduled].append(video_info)
                 await asyncio.sleep(SLEEP_TIME)
             except IndexError as e:
-                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (IndexError {e})")
+                console.print(
+                    f'[bold red][FAIL ][/bold red] cannot search videos: '
+                    f'{liver} (IndexError {e})')
                 error_list.append(liver)
                 continue
             except KeyError as e:
-                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (KeyError {e})")
+                console.print(
+                    f'[bold red][FAIL ][/bold red] cannot search videos: '
+                    f'{liver} (KeyError {e})'
+                )
                 error_list.append(liver)
                 continue
             except client_exceptions.ContentTypeError as e:
-                console.print(f"[bold red][FAIL ][/bold red] cannot search videos: {liver} (client_exceptions.ContentTypeError {e})")
+                console.print(
+                    f'[bold red][FAIL ][/bold red] cannot search videos: '
+                    f'{liver} (client_exceptions.ContentTypeError {e})'
+                )
                 error_list.append(liver)
                 continue
         await asyncio.sleep(SLEEP_TIME)
@@ -272,8 +288,7 @@ def print_schedule() -> None:
             f"({evening_count} 枠 ～18:00 {night_count} 枠)"
         )
 
-if __name__ == "__main__":
-
+def main():
     args_opts = args_parser()
 
     # NOTE: get liver videso
@@ -306,3 +321,6 @@ if __name__ == "__main__":
             error_list = asyncio.run(get_collabs_stream(error_list, start_date, end_date))
 
     print_schedule()
+
+if __name__ == "__main__":
+    main()
