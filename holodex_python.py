@@ -301,21 +301,22 @@ def main():
 
     all_liver_list = []
     for _ in LIVER_LISTS:
-        all_liver_list.extend(parse_list(_))
+        liver_list = parse_list(_)
+        all_liver_list.extend(liver_list)
 
-    errors = asyncio.run(get_live_stream(all_liver_list, start_date, end_date))
-    i = 0
-    while (len(errors) > 0) and (i <= RERUN_TIME):
-        i += 1
-        print(f'rerun list: {errors}')
-        errors = asyncio.run(get_live_stream(errors, start_date, end_date))
+        errors = asyncio.run(get_live_stream(liver_list, start_date, end_date))
+        i = 0
+        while (len(errors) > 0) and (i <= RERUN_TIME):
+            i += 1
+            print(f'rerun list: {errors}')
+            errors = asyncio.run(get_live_stream(errors, start_date, end_date))
 
-    errors = asyncio.run(get_collabs_stream(all_liver_list, start_date, end_date))
-    i = 0
-    while (len(errors) > 0) and (i <= RERUN_TIME):
-        i += 1
-        print(f'rerun list: {errors}')
-        errors = asyncio.run(get_collabs_stream(errors, start_date, end_date))
+        errors = asyncio.run(get_collabs_stream(liver_list, start_date, end_date))
+        i = 0
+        while (len(errors) > 0) and (i <= RERUN_TIME):
+            i += 1
+            print(f'rerun list: {errors}')
+            errors = asyncio.run(get_collabs_stream(errors, start_date, end_date))
 
     print_schedule(all_liver_list)
 
