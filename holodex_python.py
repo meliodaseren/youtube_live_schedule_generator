@@ -38,6 +38,7 @@ LIVER_LISTS = [
     'list/liver.FPS.list',
     'list/liver.NeoPorte.list',
 
+    # 'list/liver.test.list',
     # 'list/liver.RIOT_Music.list',
     # 'list/liver.Kamitsubaki.list',
 
@@ -45,9 +46,11 @@ LIVER_LISTS = [
     # 'list/liver.NIJISANJI_JP_SEEDs.list',
     # 'list/liver.NIJISANJI_JP_2019.list',
     # 'list/liver.NIJISANJI_JP_2020.list',
+    # 'list/liver.NIJISANJI_JP_2021.list',
     # 'list/liver.NIJISANJI_KR.list',
     # 'list/liver.NIJISANJI_ID.list',
     # 'list/liver.NIJISANJI_EN.list',
+    
 ]
 
 console = Console()
