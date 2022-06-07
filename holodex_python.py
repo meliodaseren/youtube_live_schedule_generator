@@ -50,7 +50,6 @@ LIVER_LISTS = [
     # 'list/liver.NIJISANJI_KR.list',
     # 'list/liver.NIJISANJI_ID.list',
     # 'list/liver.NIJISANJI_EN.list',
-
 ]
 
 console = Console()
