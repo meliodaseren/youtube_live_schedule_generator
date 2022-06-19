@@ -35,8 +35,8 @@ ARCHIVE_DAYS = 14
 
 LIVER_LISTS = [
     'list/liver.VSPO.list',
-    'list/liver.FPS.list',
     'list/liver.NeoPorte.list',
+    'list/liver.FPS.list',
 
     # 'list/liver.test.list',
     # 'list/liver.RIOT_Music.list',
