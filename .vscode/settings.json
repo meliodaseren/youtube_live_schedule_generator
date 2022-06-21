@@ -1,8 +1,12 @@
 {
-    "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
-        "--disable=missing",
-        "function-docstring"
+        // https://pylint.pycqa.org/en/latest/user_guide/messages/convention/missing-docstring.html
+        // missing-docstring / C0111
+        // missing-module-docstring / C0114
+        // missing-class-docstring / C0115
+        // missing-function-docstring / C0116
+        "--disable=C0111"
     ]
 }
