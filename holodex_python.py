@@ -29,7 +29,7 @@ from utils import (
 )
 
 SLEEP_TIME = 0.3
-RERUN_TIME = 0.5
+RERUN_TIME = 3
 LIMIT_ARCHIVE_VIDEOS = 10
 ARCHIVE_DAYS = 14
 
@@ -229,11 +229,14 @@ async def get_collabs_stream(liver_list: List, start_date, end_date) -> List:
         await asyncio.sleep(SLEEP_TIME)
         return error_list
 
-def print_schedule(liver_list: List) -> None:
+def print_schedule(liver_list: List, specify_date=None) -> None:
     prev_date, prev_time = "", ""
     total_count, evening_count, night_count = 0, 0, 0
     count = {}
     outfile = f"test/output.{datetime.today().strftime('%Y%m%d')}"
+    if specify_date:
+        # HACK: hack to year 20xx
+        outfile = f"test/output.20{specify_date}"
     if os.path.exists(outfile):
         console.print(f'{outfile} already exists')
     with open(outfile, 'w', encoding='utf8') as f:
@@ -320,7 +323,7 @@ def main():
             print(f'rerun list: {errors}')
             errors = asyncio.run(get_collabs_stream(errors, start_date, end_date))
 
-    print_schedule(all_liver_list)
+    print_schedule(all_liver_list, specify_date=args_opts.specify_date)
 
 if __name__ == "__main__":
     main()

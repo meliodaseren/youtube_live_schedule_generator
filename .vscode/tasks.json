@@ -12,7 +12,6 @@
                 // Ask msbuild to generate full paths for file names.
                 // "${file}"
                 "holodex_python.py"
-                // "220616"
             ],
             "group": {
                 "kind": "build",

@@ -16,13 +16,13 @@ def time_formatter(time_str):
     return time_str
 
 def utc_to_local(time_str):
-    tw = timezone(timedelta(hours=+8))
+    taiwan_time = timezone(timedelta(hours=+8))
     time_str, hour_carry = round_off_time(time_str)
     schedule_time = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S.%fZ")
     if hour_carry:
         schedule_time = schedule_time + timedelta(hours=1)
         # console.print(f"carry hour to {schedule_time}")
-    return schedule_time.replace(tzinfo=timezone.utc).astimezone(tw)
+    return schedule_time.replace(tzinfo=timezone.utc).astimezone(taiwan_time)
 
 def get_live_date(specify, input_days=1):
     if specify:
