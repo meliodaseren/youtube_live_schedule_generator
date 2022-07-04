@@ -8,5 +8,6 @@
         // missing-class-docstring / C0115
         // missing-function-docstring / C0116
         "--disable=C0111"
-    ]
+    ],
+    "discord.enabled": false
 }
